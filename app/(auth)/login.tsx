@@ -1,0 +1,105 @@
+import { useState } from "react";
+import { Alert, StyleSheet, Text, View } from "react-native";
+import { Link, router } from "expo-router";
+import { Mail, Lock } from "lucide-react-native";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Screen } from "@/components/ui/Screen";
+import { colors, spacing, typography } from "@/lib/theme";
+import { loginSchema } from "@/validation/auth";
+import { signInWithEmail } from "@/services/supabase/auth";
+import { track } from "@/lib/analytics";
+
+export default function LoginScreen() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string | undefined>>({});
+
+  const submit = async () => {
+    const parsed = loginSchema.safeParse({ email, password });
+    if (!parsed.success) {
+      const fields = parsed.error.flatten().fieldErrors;
+      setErrors({
+        email: fields.email?.[0],
+        password: fields.password?.[0]
+      });
+      return;
+    }
+
+    setLoading(true);
+    setErrors({});
+    try {
+      await signInWithEmail(parsed.data);
+      track("auth_login");
+      router.replace("/");
+    } catch (error) {
+      Alert.alert(
+        "Could not log in",
+        error instanceof Error ? error.message : "Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Screen centered>
+      <View style={styles.header}>
+        <Text style={styles.title}>Welcome back</Text>
+        <Text style={styles.subtitle}>Your next quiet plan is waiting.</Text>
+      </View>
+      <View style={styles.form}>
+        <Input
+          label="Email"
+          autoCapitalize="none"
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+          error={errors.email}
+          placeholder="you@example.com"
+        />
+        <Input
+          label="Password"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          error={errors.password}
+          placeholder="At least 6 characters"
+        />
+        <Button
+          title="Log in"
+          loading={loading}
+          icon={<Lock size={18} color="#FFFFFF" />}
+          onPress={submit}
+        />
+      </View>
+      <Link href="/register" asChild>
+        <Button
+          title="Create an account"
+          variant="ghost"
+          icon={<Mail size={18} color={colors.primaryDark} />}
+        />
+      </Link>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  header: {
+    gap: spacing.sm
+  },
+  title: {
+    color: colors.text,
+    fontSize: typography.title,
+    fontWeight: "900",
+    letterSpacing: 0
+  },
+  subtitle: {
+    color: colors.textMuted,
+    fontSize: typography.body
+  },
+  form: {
+    gap: spacing.md
+  }
+});
