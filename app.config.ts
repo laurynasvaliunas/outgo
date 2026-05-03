@@ -1,6 +1,10 @@
 import type { ExpoConfig } from "expo/config";
 
-const config: ExpoConfig = {
+type OutGoExpoConfig = ExpoConfig & {
+  newArchEnabled?: boolean;
+};
+
+const config: OutGoExpoConfig = {
   name: "OutGo",
   slug: "outgo",
   owner: "laurynas.valiunas",
@@ -9,6 +13,7 @@ const config: ExpoConfig = {
   icon: "./assets/images/icon.png",
   orientation: "portrait",
   userInterfaceStyle: "light",
+  newArchEnabled: true,
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.outgo.app",
@@ -57,12 +62,9 @@ const config: ExpoConfig = {
       }
     ],
     [
-      "react-native-maps",
+      "@rnmapbox/maps",
       {
-        androidGoogleMapsApiKey:
-          process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ?? "",
-        iosGoogleMapsApiKey:
-          process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ?? ""
+        RNMapboxMapsVersion: "11.18.2"
       }
     ]
   ],
@@ -84,6 +86,7 @@ const config: ExpoConfig = {
       process.env.EXPO_PUBLIC_REVENUECAT_MONTHLY_PRODUCT_ID,
     revenueCatYearlyProductId:
       process.env.EXPO_PUBLIC_REVENUECAT_YEARLY_PRODUCT_ID,
+    mapboxAccessToken: process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN,
     defaultCity: process.env.EXPO_PUBLIC_DEFAULT_CITY ?? "Worldwide",
     eas: {
       projectId: "c72404a0-814b-4f55-bb95-4ed53424de9c"

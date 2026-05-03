@@ -10,7 +10,7 @@ The app is intentionally not built like an addictive social feed. Users browse a
 - Supabase Auth, Postgres, Storage, Realtime and Row Level Security
 - Sentry error tracking
 - RevenueCat purchases/subscriptions
-- React Native Maps
+- Mapbox maps through `@rnmapbox/maps`
 - StyleSheet-based design system
 - Zod validation
 - date-fns date formatting
@@ -49,7 +49,9 @@ cp .env.example .env
 EXPO_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-supabase-publishable-key
 EXPO_PUBLIC_SENTRY_DSN=
-EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=
+EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN=
+# Secret native build variable. Do not prefix with EXPO_PUBLIC.
+RNMAPBOX_MAPS_DOWNLOAD_TOKEN=
 EXPO_PUBLIC_REVENUECAT_IOS_API_KEY=
 EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY=
 EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID=outgo_plus
@@ -89,7 +91,20 @@ For a hosted Supabase project, you can also paste `supabase/seed/seed_vilnius.sq
 npm run start
 ```
 
-Use Expo Go for a quick pass, or create a development/TestFlight build for real RevenueCat purchase testing and production-like native map configuration. Add a Google Maps API key for Android standalone builds.
+Use a development/TestFlight build for the native Mapbox map and real RevenueCat purchase testing. `@rnmapbox/maps` requires custom native code, so the map screen cannot run inside Expo Go.
+
+## Mapbox
+
+The app uses a public runtime token in `EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN`. This token renders the map and is safe to expose in the mobile app binary.
+
+For EAS native builds, add the secret download token to EAS as `RNMAPBOX_MAPS_DOWNLOAD_TOKEN`. Supabase secrets are only available to Supabase Edge Functions and are not read by EAS Build.
+
+```bash
+npx eas env:create production --name EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN --value your-mapbox-public-token --visibility plaintext
+npx eas env:create production --name RNMAPBOX_MAPS_DOWNLOAD_TOKEN --value your-mapbox-secret-download-token --visibility secret
+```
+
+Mapbox is initialized in `src/components/maps/EventMap.tsx`. The web route intentionally uses a simple fallback list until the web app has its own browser map implementation.
 
 ## Supabase Notes
 
@@ -173,6 +188,8 @@ Before archiving, configure production env vars:
 ```bash
 npx eas env:create --environment production --name EXPO_PUBLIC_SUPABASE_URL --value https://your-project-ref.supabase.co
 npx eas env:create --environment production --name EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY --value your-supabase-publishable-key
+npx eas env:create --environment production --name EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN --value your-mapbox-public-token --visibility plaintext
+npx eas env:create --environment production --name RNMAPBOX_MAPS_DOWNLOAD_TOKEN --value your-mapbox-secret-download-token --visibility secret
 npx eas env:create --environment production --name EXPO_PUBLIC_DEFAULT_CITY --value Worldwide
 ```
 
@@ -180,7 +197,6 @@ Optional production env vars:
 
 ```bash
 npx eas env:create --environment production --name EXPO_PUBLIC_SENTRY_DSN --value your-sentry-dsn
-npx eas env:create --environment production --name EXPO_PUBLIC_GOOGLE_MAPS_API_KEY --value your-google-maps-key
 npx eas env:create --environment production --name EXPO_PUBLIC_REVENUECAT_IOS_API_KEY --value your-revenuecat-ios-key
 npx eas env:create --environment production --name EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY --value your-revenuecat-android-key
 npx eas env:create --environment production --name EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID --value outgo_plus

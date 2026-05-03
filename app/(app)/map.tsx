@@ -1,7 +1,7 @@
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { CalendarDays, MapPin, Users } from "lucide-react-native";
-import MapView, { Marker } from "react-native-maps";
+import { EventMap } from "@/components/maps/EventMap";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Screen } from "@/components/ui/Screen";
@@ -22,7 +22,6 @@ export default function MapScreen() {
   const origin = useDeviceOrigin();
   const { events, loading, error, refresh } = useEvents(MAP_FILTERS);
   const center = origin ?? GLOBAL_MAP_CENTER;
-  const delta = origin ? 0.12 : 140;
   const eventCountLabel = `${events.length} ${events.length === 1 ? "plan" : "plans"}`;
 
   if (Platform.OS === "web") {
@@ -67,29 +66,12 @@ export default function MapScreen() {
       ) : null}
       {!loading && !error ? (
         <View style={styles.mapFrame}>
-          <MapView
-            style={styles.map}
-            initialRegion={{
-              latitude: center.latitude,
-              longitude: center.longitude,
-              latitudeDelta: delta,
-              longitudeDelta: delta
-            }}
-          >
-            {events.map((event) => (
-              <Marker
-                key={event.id}
-                coordinate={{
-                  latitude: event.latitude,
-                  longitude: event.longitude
-                }}
-                title={event.title}
-                description={event.location_name}
-                pinColor={colors.primaryDark}
-                onCalloutPress={() => router.push(`/event/${event.id}`)}
-              />
-            ))}
-          </MapView>
+          <EventMap
+            events={events}
+            center={center}
+            hasDeviceOrigin={Boolean(origin)}
+            onEventPress={(event) => router.push(`/event/${event.id}`)}
+          />
           <View style={styles.summaryPill}>
             <Text style={styles.summaryText}>{eventCountLabel} · today to 7 days</Text>
           </View>
@@ -173,9 +155,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surfaceMuted
-  },
-  map: {
-    flex: 1
   },
   summaryPill: {
     position: "absolute",
