@@ -72,6 +72,7 @@ export default function AppTabsLayout() {
         }}
       />
       <Tabs.Screen name="create-event" options={{ href: null }} />
+      <Tabs.Screen name="paywall" options={{ href: null }} />
       <Tabs.Screen name="settings" options={{ href: null }} />
       <Tabs.Screen name="joined-events" options={{ href: null }} />
       <Tabs.Screen name="hosted-events" options={{ href: null }} />

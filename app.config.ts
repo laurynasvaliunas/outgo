@@ -79,6 +79,11 @@ const config: ExpoConfig = {
       process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY ??
       process.env.EXPO_PUBLIC_REVENUECAT_API_KEY,
     revenueCatEntitlementId: process.env.EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID,
+    revenueCatOfferingId: process.env.EXPO_PUBLIC_REVENUECAT_OFFERING_ID,
+    revenueCatMonthlyProductId:
+      process.env.EXPO_PUBLIC_REVENUECAT_MONTHLY_PRODUCT_ID,
+    revenueCatYearlyProductId:
+      process.env.EXPO_PUBLIC_REVENUECAT_YEARLY_PRODUCT_ID,
     defaultCity: process.env.EXPO_PUBLIC_DEFAULT_CITY ?? "Worldwide",
     eas: {
       projectId: "c72404a0-814b-4f55-bb95-4ed53424de9c"

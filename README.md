@@ -51,7 +51,12 @@ EXPO_PUBLIC_SENTRY_DSN=
 EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=
 EXPO_PUBLIC_REVENUECAT_IOS_API_KEY=
 EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY=
-EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID=
+EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID=outgo_plus
+EXPO_PUBLIC_REVENUECAT_OFFERING_ID=default
+EXPO_PUBLIC_REVENUECAT_MONTHLY_PRODUCT_ID=outgo_plus_monthly
+EXPO_PUBLIC_REVENUECAT_YEARLY_PRODUCT_ID=outgo_plus_yearly
+EXPO_PUBLIC_TERMS_URL=
+EXPO_PUBLIC_PRIVACY_URL=
 EXPO_PUBLIC_DEFAULT_CITY=Worldwide
 ```
 
@@ -116,15 +121,25 @@ Set `EXPO_PUBLIC_SENTRY_DSN` to enable runtime capture. The settings screen incl
 
 ## RevenueCat
 
-RevenueCat is initialized in `app/_layout.tsx` through `src/lib/revenuecat.ts`. Supabase user IDs are sent as RevenueCat App User IDs after auth is restored, and Settings includes basic customer-info and restore-purchases checks.
+RevenueCat is initialized in `app/_layout.tsx` through `src/lib/revenuecat.ts`. Supabase user IDs are sent as RevenueCat App User IDs after auth is restored. Settings includes basic customer-info and restore-purchases checks, plus an OutGo Plus paywall at `/paywall`.
 
 Configure platform API keys:
 
 ```bash
 EXPO_PUBLIC_REVENUECAT_IOS_API_KEY=your-revenuecat-ios-key
 EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY=your-revenuecat-android-key
-EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID=your-entitlement-id
+EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID=outgo_plus
+EXPO_PUBLIC_REVENUECAT_OFFERING_ID=default
+EXPO_PUBLIC_REVENUECAT_MONTHLY_PRODUCT_ID=outgo_plus_monthly
+EXPO_PUBLIC_REVENUECAT_YEARLY_PRODUCT_ID=outgo_plus_yearly
 ```
+
+Create one RevenueCat entitlement named `outgo_plus`, one offering named `default`, and attach two subscription packages:
+
+- Monthly product ID: `outgo_plus_monthly`, target price: EUR 3/month
+- Yearly product ID: `outgo_plus_yearly`, target price: EUR 24/year
+
+The app shows fallback price copy of `€3` and `€24`, but the checkout price is always confirmed by the App Store or Google Play from the configured store products.
 
 Real purchases require an EAS development build or TestFlight/App Store build. Expo Go can preview app flows, but it cannot complete real in-app purchases.
 
@@ -147,7 +162,12 @@ npx eas env:create --environment production --name EXPO_PUBLIC_SENTRY_DSN --valu
 npx eas env:create --environment production --name EXPO_PUBLIC_GOOGLE_MAPS_API_KEY --value your-google-maps-key
 npx eas env:create --environment production --name EXPO_PUBLIC_REVENUECAT_IOS_API_KEY --value your-revenuecat-ios-key
 npx eas env:create --environment production --name EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY --value your-revenuecat-android-key
-npx eas env:create --environment production --name EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID --value your-entitlement-id
+npx eas env:create --environment production --name EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID --value outgo_plus
+npx eas env:create --environment production --name EXPO_PUBLIC_REVENUECAT_OFFERING_ID --value default
+npx eas env:create --environment production --name EXPO_PUBLIC_REVENUECAT_MONTHLY_PRODUCT_ID --value outgo_plus_monthly
+npx eas env:create --environment production --name EXPO_PUBLIC_REVENUECAT_YEARLY_PRODUCT_ID --value outgo_plus_yearly
+npx eas env:create --environment production --name EXPO_PUBLIC_TERMS_URL --value https://your-domain.example/terms
+npx eas env:create --environment production --name EXPO_PUBLIC_PRIVACY_URL --value https://your-domain.example/privacy
 ```
 
 Then run the first iOS archive interactively so EAS can validate or create Apple signing credentials:

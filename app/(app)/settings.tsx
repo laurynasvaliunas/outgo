@@ -118,6 +118,11 @@ export default function SettingsScreen() {
         </View>
       </Card>
       <Button
+        title="Open OutGo Plus"
+        icon={<CreditCard size={18} color="#FFFFFF" />}
+        onPress={() => router.push("/paywall")}
+      />
+      <Button
         title="Check RevenueCat"
         variant="secondary"
         loading={purchases.loading}
