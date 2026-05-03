@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     paddingRight: spacing.lg
   },
   chipButton: {
-    minHeight: 34,
+    minHeight: 36,
     paddingHorizontal: spacing.md
   },
   group: {

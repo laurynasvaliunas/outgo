@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { CalendarDays, MapPin, Users } from "lucide-react-native";
+import { CalendarDays, MapPin, ShieldCheck, Users } from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
 import { CategoryPill } from "./CategoryPill";
@@ -31,6 +31,16 @@ export function EventCard({ event, onPress }: EventCardProps) {
             <Text numberOfLines={2} style={styles.description}>
               {event.description}
             </Text>
+          </View>
+
+          <View style={styles.vibeRow}>
+            <Text numberOfLines={1} style={styles.vibe}>
+              {event.vibe}
+            </Text>
+            <View style={styles.safetyPill}>
+              <ShieldCheck size={13} color={colors.success} />
+              <Text style={styles.safetyText}>Public place</Text>
+            </View>
           </View>
 
           <View style={styles.meta}>
@@ -76,7 +86,8 @@ export function EventCard({ event, onPress }: EventCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    gap: spacing.md
+    gap: spacing.md,
+    borderColor: colors.border
   },
   pressed: {
     opacity: 0.9
@@ -91,6 +102,37 @@ const styles = StyleSheet.create({
     color: colors.success,
     fontSize: typography.small,
     fontWeight: "800"
+  },
+  vibeRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: spacing.sm
+  },
+  vibe: {
+    flexShrink: 1,
+    color: colors.lavender,
+    backgroundColor: colors.lavenderSoft,
+    borderRadius: 999,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    fontSize: typography.tiny,
+    fontWeight: "900",
+    overflow: "hidden"
+  },
+  safetyPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    borderRadius: 999,
+    backgroundColor: colors.successSoft,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs
+  },
+  safetyText: {
+    color: colors.success,
+    fontSize: typography.tiny,
+    fontWeight: "900"
   },
   full: {
     color: colors.danger
@@ -119,9 +161,9 @@ const styles = StyleSheet.create({
   },
   metaText: {
     flex: 1,
-    color: colors.text,
+    color: colors.textMuted,
     fontSize: typography.small,
-    fontWeight: "600"
+    fontWeight: "800"
   },
   footer: {
     paddingTop: spacing.md,

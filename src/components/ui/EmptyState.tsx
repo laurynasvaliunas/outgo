@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
-import { colors, spacing, typography } from "@/lib/theme";
+import type { ReactNode } from "react";
+import { colors, radii, spacing, typography } from "@/lib/theme";
 import { Button } from "./Button";
 
 type EmptyStateProps = {
@@ -7,16 +8,19 @@ type EmptyStateProps = {
   message: string;
   actionTitle?: string;
   onAction?: () => void;
+  icon?: ReactNode;
 };
 
 export function EmptyState({
   title,
   message,
   actionTitle,
-  onAction
+  onAction,
+  icon
 }: EmptyStateProps) {
   return (
     <View style={styles.wrapper}>
+      {icon ? <View style={styles.icon}>{icon}</View> : null}
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.message}>{message}</Text>
       {actionTitle && onAction ? (
@@ -31,6 +35,14 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xxl,
     gap: spacing.md,
     alignItems: "center"
+  },
+  icon: {
+    width: 58,
+    height: 58,
+    borderRadius: radii.pill,
+    backgroundColor: colors.primarySofter,
+    alignItems: "center",
+    justifyContent: "center"
   },
   title: {
     fontSize: typography.subheading,

@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import {
+  CalendarDays,
   Flag,
   Heart,
   HeartOff,
+  MapPin,
   MessageCircle,
   ShieldCheck,
   UserPlus,
@@ -131,20 +133,41 @@ export default function EventDetailsScreen() {
         <CategoryPill category={event.category} />
         <Text style={styles.title}>{event.title}</Text>
         <Text style={styles.description}>{event.description}</Text>
+        <View style={styles.headerPills}>
+          <Text style={styles.vibePill}>{event.vibe}</Text>
+          <Text style={styles.statusPill}>
+            {event.participant_count}/{event.max_participants} joined
+          </Text>
+        </View>
       </View>
 
       <Card style={styles.metaCard}>
-        <Text style={styles.metaLine}>{formatEventDate(event.start_time)}</Text>
-        <Text style={styles.metaMuted}>{relativeEventTime(event.start_time)}</Text>
-        <Text style={styles.metaLine}>{event.location_name}</Text>
-        <Text style={styles.metaMuted}>
-          {event.city} · {event.vibe}
-        </Text>
-        <Text style={styles.metaLine}>
-          {event.participant_count}/{event.max_participants} people ·{" "}
-          {priceLabels[event.price_type]}
-          {event.price_amount ? ` €${event.price_amount}` : ""}
-        </Text>
+        <View style={styles.metaRow}>
+          <CalendarDays size={19} color={colors.primaryDark} />
+          <View style={styles.metaCopy}>
+            <Text style={styles.metaLine}>{formatEventDate(event.start_time)}</Text>
+            <Text style={styles.metaMuted}>{relativeEventTime(event.start_time)}</Text>
+          </View>
+        </View>
+        <View style={styles.metaRow}>
+          <MapPin size={19} color={colors.primaryDark} />
+          <View style={styles.metaCopy}>
+            <Text style={styles.metaLine}>{event.location_name}</Text>
+            <Text style={styles.metaMuted}>{event.city} · public meetup spot</Text>
+          </View>
+        </View>
+        <View style={styles.metaRow}>
+          <UserPlus size={19} color={colors.primaryDark} />
+          <View style={styles.metaCopy}>
+            <Text style={styles.metaLine}>
+              {priceLabels[event.price_type]}
+              {event.price_amount ? ` · €${event.price_amount}` : ""}
+            </Text>
+            <Text style={styles.metaMuted}>
+              Limited group: max {event.max_participants} people
+            </Text>
+          </View>
+        </View>
       </Card>
 
       <Card style={styles.hostCard}>
@@ -177,6 +200,17 @@ export default function EventDetailsScreen() {
           <Text style={styles.safetyText}>
             {event.safety_note ||
               "Meet in a public place, tell someone where you are going and leave any time."}
+          </Text>
+        </View>
+      </Card>
+
+      <Card style={styles.afterJoinCard}>
+        <MessageCircle size={23} color={colors.blue} />
+        <View style={styles.safetyCopy}>
+          <Text style={styles.safetyTitle}>After joining</Text>
+          <Text style={styles.safetyText}>
+            Participant chat opens for simple logistics: meeting point, ETA and
+            friendly basics. No public popularity mechanics.
           </Text>
         </View>
       </Card>
@@ -249,8 +283,42 @@ const styles = StyleSheet.create({
     fontSize: typography.body,
     lineHeight: 24
   },
-  metaCard: {
+  headerPills: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: spacing.sm
+  },
+  vibePill: {
+    color: colors.lavender,
+    backgroundColor: colors.lavenderSoft,
+    borderRadius: 999,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    fontSize: typography.small,
+    fontWeight: "900",
+    overflow: "hidden"
+  },
+  statusPill: {
+    color: colors.success,
+    backgroundColor: colors.successSoft,
+    borderRadius: 999,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    fontSize: typography.small,
+    fontWeight: "900",
+    overflow: "hidden"
+  },
+  metaCard: {
+    gap: spacing.md
+  },
+  metaRow: {
+    flexDirection: "row",
+    gap: spacing.md,
+    alignItems: "flex-start"
+  },
+  metaCopy: {
+    flex: 1,
+    gap: spacing.xs
   },
   metaLine: {
     color: colors.text,
@@ -287,7 +355,12 @@ const styles = StyleSheet.create({
   safetyCard: {
     flexDirection: "row",
     gap: spacing.md,
-    backgroundColor: colors.primarySoft
+    backgroundColor: colors.primarySofter
+  },
+  afterJoinCard: {
+    flexDirection: "row",
+    gap: spacing.md,
+    backgroundColor: colors.blueSoft
   },
   safetyCopy: {
     flex: 1,

@@ -1,5 +1,5 @@
 import { StyleSheet, View, type ViewProps } from "react-native";
-import { colors, radii, spacing } from "@/lib/theme";
+import { colors, radii, shadows, spacing } from "@/lib/theme";
 
 type CardProps = ViewProps & {
   padded?: boolean;
@@ -12,14 +12,10 @@ export function Card({ style, padded = true, ...props }: CardProps) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    borderRadius: radii.md,
+    borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.05,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 2
+    ...shadows.soft
   },
   padded: {
     padding: spacing.lg

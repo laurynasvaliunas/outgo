@@ -1,26 +1,30 @@
+import { useState } from "react";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
-import { CalendarDays, MapPin, Users } from "lucide-react-native";
+import { CalendarDays, MapPin, Plus, Users } from "lucide-react-native";
 import { EventMap } from "@/components/maps/EventMap";
+import { EventFilters } from "@/components/events/EventFilters";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Screen } from "@/components/ui/Screen";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { EventCard } from "@/components/events/EventCard";
+import { Button } from "@/components/ui/Button";
 import { useDeviceOrigin, useEvents } from "@/hooks/useEvents";
 import { categoryLabels, priceLabels } from "@/lib/categories";
 import { formatEventDate } from "@/lib/date";
 import { GLOBAL_MAP_CENTER } from "@/lib/distance";
 import { colors, radii, spacing, typography } from "@/lib/theme";
-import type { EventFilters, EventWithMeta } from "@/types/domain";
+import type { EventFilters as EventFilterState, EventWithMeta } from "@/types/domain";
 
-const MAP_FILTERS: EventFilters = {
+const MAP_FILTERS: EventFilterState = {
   date: "week"
 };
 
 export default function MapScreen() {
+  const [filters, setFilters] = useState<EventFilterState>(MAP_FILTERS);
   const origin = useDeviceOrigin();
-  const { events, loading, error, refresh } = useEvents(MAP_FILTERS);
+  const { events, loading, error, refresh } = useEvents(filters);
   const center = origin ?? GLOBAL_MAP_CENTER;
   const eventCountLabel = `${events.length} ${events.length === 1 ? "plan" : "plans"}`;
 
@@ -56,44 +60,80 @@ export default function MapScreen() {
 
   return (
     <Screen scroll={false} contentStyle={styles.screen}>
-      <SectionHeader
-        title="Happening this week"
-        subtitle="Events, clubs, and meetups from today through the next 7 days."
-      />
-      {loading ? <LoadingState message="Loading this week's plans..." /> : null}
-      {error ? (
-        <EmptyState title="Could not load map" message={error} actionTitle="Try again" onAction={refresh} />
-      ) : null}
-      {!loading && !error ? (
-        <View style={styles.mapFrame}>
+      <View style={styles.mapFrame}>
+        {!loading && !error ? (
           <EventMap
             events={events}
             center={center}
             hasDeviceOrigin={Boolean(origin)}
             onEventPress={(event) => router.push(`/event/${event.id}`)}
           />
+        ) : (
+          <View style={styles.mapFallback} />
+        )}
+
+        <View style={styles.topPanel}>
+          <View style={styles.topRow}>
+            <View style={styles.topCopy}>
+              <Text style={styles.eyebrow}>OUTGO</Text>
+              <Text style={styles.mapTitle}>Happening this week</Text>
+              <Text style={styles.mapSubtitle}>
+                Today to next 7 days · {origin ? "near you" : "worldwide"}
+              </Text>
+            </View>
+            <Button
+              title="Host"
+              icon={<Plus size={17} color={colors.white} />}
+              onPress={() => router.push("/create-event")}
+              style={styles.hostButton}
+            />
+          </View>
+          <EventFilters filters={filters} onChange={setFilters} compact />
+        </View>
+
+        {loading ? (
+          <View style={styles.centerOverlay}>
+            <LoadingState message="Loading this week's plans..." />
+          </View>
+        ) : null}
+
+        {error ? (
+          <View style={styles.centerOverlay}>
+            <EmptyState
+              title="Could not load map"
+              message={error}
+              actionTitle="Try again"
+              onAction={refresh}
+            />
+          </View>
+        ) : null}
+
+        {!loading && !error ? (
           <View style={styles.summaryPill}>
             <Text style={styles.summaryText}>{eventCountLabel} · today to 7 days</Text>
           </View>
-          {events.length === 0 ? (
-            <View style={styles.mapEmpty}>
-              <Text style={styles.mapEmptyTitle}>No plans this week</Text>
-              <Text style={styles.mapEmptyText}>Create the first low-pressure meetup around a public place.</Text>
-            </View>
-          ) : (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.eventRailContent}
-              style={styles.eventRail}
-            >
-              {events.map((event) => (
-                <MapEventPreview key={event.id} event={event} />
-              ))}
-            </ScrollView>
-          )}
-        </View>
-      ) : null}
+        ) : null}
+
+        {!loading && !error && events.length === 0 ? (
+          <View style={styles.mapEmpty}>
+            <Text style={styles.mapEmptyTitle}>No plans this week</Text>
+            <Text style={styles.mapEmptyText}>Create the first low-pressure meetup around a public place.</Text>
+          </View>
+        ) : null}
+
+        {!loading && !error && events.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.eventRailContent}
+            style={styles.eventRail}
+          >
+            {events.map((event) => (
+              <MapEventPreview key={event.id} event={event} />
+            ))}
+          </ScrollView>
+        ) : null}
+      </View>
     </Screen>
   );
 }
@@ -145,20 +185,79 @@ function MapEventPreview({ event }: { event: EventWithMeta }) {
 
 const styles = StyleSheet.create({
   screen: {
-    flex: 1
+    flex: 1,
+    padding: 0,
+    gap: 0
   },
   mapFrame: {
     flex: 1,
-    minHeight: 480,
-    borderRadius: radii.md,
     overflow: "hidden",
+    backgroundColor: colors.surfaceMuted
+  },
+  mapFallback: {
+    flex: 1,
+    backgroundColor: colors.surfaceMuted
+  },
+  topPanel: {
+    position: "absolute",
+    top: spacing.lg,
+    left: spacing.lg,
+    right: spacing.lg,
+    gap: spacing.md,
+    borderRadius: radii.lg,
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.surfaceMuted
+    padding: spacing.md,
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4
+  },
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md
+  },
+  topCopy: {
+    flex: 1,
+    gap: 2
+  },
+  eyebrow: {
+    color: colors.primary,
+    fontSize: typography.tiny,
+    fontWeight: "900"
+  },
+  mapTitle: {
+    color: colors.text,
+    fontSize: typography.heading,
+    fontWeight: "900",
+    letterSpacing: 0
+  },
+  mapSubtitle: {
+    color: colors.textMuted,
+    fontSize: typography.small,
+    fontWeight: "800"
+  },
+  hostButton: {
+    minHeight: 40,
+    paddingHorizontal: spacing.md
+  },
+  centerOverlay: {
+    position: "absolute",
+    left: spacing.lg,
+    right: spacing.lg,
+    top: "34%",
+    borderRadius: radii.lg,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.md
   },
   summaryPill: {
     position: "absolute",
-    top: spacing.md,
+    top: 178,
     left: spacing.md,
     maxWidth: "76%",
     borderRadius: radii.pill,
@@ -207,7 +306,7 @@ const styles = StyleSheet.create({
   },
   eventRailContent: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
+    paddingBottom: spacing.xl,
     gap: spacing.md
   },
   previewCard: {

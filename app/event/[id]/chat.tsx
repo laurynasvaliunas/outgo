@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Alert, FlatList, StyleSheet, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { Send } from "lucide-react-native";
+import { Flag, Send, ShieldCheck } from "lucide-react-native";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -70,6 +70,22 @@ export default function EventChatScreen() {
         title="Event Chat"
         subtitle={event?.title ?? "Participants only"}
       />
+      <Card style={styles.chatNotice}>
+        <ShieldCheck size={20} color={colors.success} />
+        <View style={styles.noticeCopy}>
+          <Text style={styles.noticeTitle}>Logistics-first chat</Text>
+          <Text style={styles.noticeText}>
+            Keep it practical: meeting point, ETA, group details. Report anything that feels unsafe.
+          </Text>
+        </View>
+        <Button
+          title="Report"
+          variant="ghost"
+          icon={<Flag size={16} color={colors.danger} />}
+          onPress={() => router.push(`/report?targetType=event&eventId=${id}`)}
+          style={styles.reportButton}
+        />
+      </Card>
       {error ? (
         <EmptyState title="Could not load chat" message={error} />
       ) : (
@@ -141,6 +157,32 @@ const styles = StyleSheet.create({
   },
   messagesList: {
     flex: 1
+  },
+  chatNotice: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    backgroundColor: colors.primarySofter,
+    padding: spacing.md
+  },
+  noticeCopy: {
+    flex: 1,
+    gap: spacing.xs
+  },
+  noticeTitle: {
+    color: colors.text,
+    fontSize: typography.small,
+    fontWeight: "900"
+  },
+  noticeText: {
+    color: colors.textMuted,
+    fontSize: typography.tiny,
+    lineHeight: 16,
+    fontWeight: "700"
+  },
+  reportButton: {
+    minHeight: 36,
+    paddingHorizontal: spacing.sm
   },
   messageRow: {
     flexDirection: "row",

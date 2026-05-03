@@ -17,12 +17,13 @@ export function LoadingState({ message = "Loading..." }: LoadingStateProps) {
 const styles = StyleSheet.create({
   wrapper: {
     paddingVertical: spacing.xxl,
-    gap: spacing.md,
+    gap: spacing.sm,
     alignItems: "center",
     justifyContent: "center"
   },
   text: {
     color: colors.textMuted,
-    fontSize: typography.body
+    fontSize: typography.small,
+    fontWeight: "800"
   }
 });

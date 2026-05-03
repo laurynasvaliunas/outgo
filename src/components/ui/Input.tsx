@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -21,15 +22,33 @@ export function Input({
   style,
   multiline,
   containerStyle,
+  onFocus,
+  onBlur,
   ...props
 }: InputProps) {
+  const [focused, setFocused] = useState(false);
+
   return (
     <View style={[styles.wrapper, containerStyle]}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
         placeholderTextColor={colors.textMuted}
         multiline={multiline}
-        style={[styles.input, multiline && styles.multiline, error && styles.inputError, style]}
+        onFocus={(event) => {
+          setFocused(true);
+          onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          setFocused(false);
+          onBlur?.(event);
+        }}
+        style={[
+          styles.input,
+          focused && styles.inputFocused,
+          multiline && styles.multiline,
+          error && styles.inputError,
+          style
+        ]}
         {...props}
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -43,18 +62,22 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: typography.small,
-    fontWeight: "700",
+    fontWeight: "900",
     color: colors.text
   },
   input: {
-    minHeight: 48,
-    borderRadius: radii.md,
+    minHeight: 50,
+    borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.backgroundElevated,
     paddingHorizontal: spacing.md,
     color: colors.text,
     fontSize: typography.body
+  },
+  inputFocused: {
+    borderColor: colors.primary,
+    backgroundColor: colors.surface
   },
   multiline: {
     minHeight: 112,

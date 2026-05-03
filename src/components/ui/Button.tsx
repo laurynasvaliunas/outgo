@@ -8,7 +8,7 @@ import {
   type ViewStyle
 } from "react-native";
 import type { ReactNode } from "react";
-import { colors, radii, spacing, typography } from "@/lib/theme";
+import { colors, radii, shadows, spacing, typography } from "@/lib/theme";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 
@@ -74,8 +74,8 @@ export function Button({
 
 const styles = StyleSheet.create({
   base: {
-    minHeight: 48,
-    borderRadius: radii.md,
+    minHeight: 50,
+    borderRadius: radii.pill,
     paddingHorizontal: spacing.lg,
     alignItems: "center",
     justifyContent: "center",
@@ -83,28 +83,31 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   primary: {
-    backgroundColor: colors.primary
+    backgroundColor: colors.primaryDark,
+    ...shadows.soft
   },
   secondary: {
-    backgroundColor: colors.primarySoft,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.primary
+    borderColor: colors.borderStrong
   },
   ghost: {
     backgroundColor: "transparent"
   },
   danger: {
-    backgroundColor: colors.danger
+    backgroundColor: colors.danger,
+    ...shadows.soft
   },
   disabled: {
     opacity: 0.55
   },
   pressed: {
-    opacity: 0.82
+    opacity: 0.86,
+    transform: [{ scale: 0.99 }]
   },
   text: {
-    fontSize: typography.body,
-    fontWeight: "700",
+    fontSize: typography.small,
+    fontWeight: "900",
     letterSpacing: 0
   },
   primaryText: {

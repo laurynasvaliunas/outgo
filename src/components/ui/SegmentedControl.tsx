@@ -44,10 +44,10 @@ export function SegmentedControl<T extends string>({
 
 const styles = StyleSheet.create({
   wrapper: {
-    minHeight: 44,
+    minHeight: 48,
     padding: spacing.xs,
     backgroundColor: colors.surfaceMuted,
-    borderRadius: radii.md,
+    borderRadius: radii.pill,
     flexDirection: "row",
     gap: spacing.xs
   },
@@ -55,13 +55,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: radii.sm,
+    borderRadius: radii.pill,
     paddingHorizontal: spacing.sm
   },
   selected: {
     backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border
+    borderColor: colors.borderStrong
   },
   label: {
     color: colors.textMuted,

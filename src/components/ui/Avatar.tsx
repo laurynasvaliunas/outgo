@@ -14,7 +14,7 @@ export function Avatar({ url, name, size = 44 }: AvatarProps) {
       .map((part) => part[0])
       .join("")
       .slice(0, 2)
-      .toUpperCase() || "OC";
+      .toUpperCase() || "OG";
 
   if (url) {
     return (
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.primarySoft,
     borderWidth: 1,
-    borderColor: colors.primary
+    borderColor: colors.borderStrong
   },
   initials: {
     color: colors.primaryDark,

@@ -92,7 +92,7 @@ export default function CreateEventScreen() {
   return (
     <Screen>
       <SectionHeader
-        title="Create Event"
+        title="Host a Plan"
         subtitle="Small groups, clear expectations, public place first."
       />
       <Card style={styles.safetyCard}>
@@ -104,6 +104,7 @@ export default function CreateEventScreen() {
       </Card>
 
       <View style={styles.form}>
+        <Text style={styles.sectionTitle}>Basics</Text>
         <Input label="Title" value={title} onChangeText={setTitle} error={errors.title} placeholder="Coffee after work" />
         <Input
           label="Description"
@@ -130,6 +131,7 @@ export default function CreateEventScreen() {
         </View>
 
         <Input label="Vibe" value={vibe} onChangeText={setVibe} error={errors.vibe} placeholder="Quiet, beginner-friendly..." />
+        <Text style={styles.sectionTitle}>Place and time</Text>
         <Input label="Location name" value={locationName} onChangeText={setLocationName} error={errors.location_name} placeholder="Cafe, library, park entrance..." />
         <View style={styles.inline}>
           <Input label="Latitude" value={latitude} onChangeText={setLatitude} error={errors.latitude} keyboardType="decimal-pad" containerStyle={styles.halfInput} />
@@ -138,7 +140,9 @@ export default function CreateEventScreen() {
         <Input label="City" value={city} onChangeText={setCity} error={errors.city} placeholder="Paris, Vilnius, Tokyo..." />
         <Input label="Start time" value={startTime} onChangeText={setStartTime} error={errors.start_time} placeholder="2026-05-01T18:30" />
         <Input label="End time" value={endTime} onChangeText={setEndTime} error={errors.end_time} placeholder="Optional, e.g. 2026-05-01T20:00" />
+        <Text style={styles.sectionTitle}>Group and price</Text>
         <Input label="Max participants" value={maxParticipants} onChangeText={setMaxParticipants} error={errors.max_participants} keyboardType="number-pad" />
+        <Text style={styles.helper}>Keep it between 2 and 20 so people can actually talk.</Text>
 
         <View style={styles.group}>
           <Text style={styles.label}>Price</Text>
@@ -164,6 +168,9 @@ export default function CreateEventScreen() {
           error={errors.safety_note}
           multiline
         />
+        <Text style={styles.helper}>
+          Add rules people can act on: where to meet, phone expectations, late arrival, and how to find the group.
+        </Text>
 
         <Button
           title="Publish event"
@@ -199,6 +206,19 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: typography.small,
     fontWeight: "800"
+  },
+  sectionTitle: {
+    color: colors.primaryDark,
+    fontSize: typography.small,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  helper: {
+    color: colors.textMuted,
+    fontSize: typography.small,
+    lineHeight: 19,
+    fontWeight: "700",
+    marginTop: -spacing.sm
   },
   pills: {
     flexDirection: "row",

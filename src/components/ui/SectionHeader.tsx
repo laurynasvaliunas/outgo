@@ -39,7 +39,8 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     color: colors.textMuted,
-    fontSize: typography.body,
-    lineHeight: 22
+    fontSize: typography.small,
+    lineHeight: 20,
+    fontWeight: "700"
   }
 });

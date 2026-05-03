@@ -20,7 +20,7 @@ export function CategoryPill({ category, selected, onPress }: CategoryPillProps)
         styles.pill,
         tone === "blue" && styles.blue,
         tone === "clay" && styles.clay,
-        selected && styles.selected
+    selected && styles.selected
       ]}
     >
       <Text style={[styles.label, selected && styles.selectedLabel]}>
@@ -34,11 +34,13 @@ const styles = StyleSheet.create({
   pill: {
     alignSelf: "flex-start",
     borderRadius: radii.pill,
-    paddingVertical: spacing.xs,
+    paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     backgroundColor: colors.primarySoft,
     borderWidth: 1,
-    borderColor: "transparent"
+    borderColor: "transparent",
+    minHeight: 34,
+    justifyContent: "center"
   },
   blue: {
     backgroundColor: colors.blueSoft
@@ -47,8 +49,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accentSoft
   },
   selected: {
-    borderColor: colors.text,
-    backgroundColor: colors.text
+    borderColor: colors.primaryDark,
+    backgroundColor: colors.primaryDark
   },
   label: {
     color: colors.text,
