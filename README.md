@@ -21,6 +21,7 @@ The app is intentionally not built like an addictive social feed. Users browse a
 - `app/` - Expo Router screens and navigation groups
 - `src/components/` - reusable UI and event components
 - `src/hooks/` - auth, events and realtime chat hooks
+- `src/lib/legal.ts` - in-app legal documents and company details
 - `src/lib/revenuecat.ts` - RevenueCat SDK setup and entitlement helpers
 - `src/services/supabase/` - typed Supabase client and data services
 - `src/types/` - domain and Supabase database types
@@ -57,6 +58,8 @@ EXPO_PUBLIC_REVENUECAT_MONTHLY_PRODUCT_ID=outgo_plus_monthly
 EXPO_PUBLIC_REVENUECAT_YEARLY_PRODUCT_ID=outgo_plus_yearly
 EXPO_PUBLIC_TERMS_URL=
 EXPO_PUBLIC_PRIVACY_URL=
+EXPO_PUBLIC_LEGAL_EMAIL=support@outgo.app
+EXPO_PUBLIC_PRIVACY_EMAIL=privacy@outgo.app
 EXPO_PUBLIC_DEFAULT_CITY=Worldwide
 ```
 
@@ -119,6 +122,24 @@ The join rules are enforced both by RLS and a trigger-backed `can_join_event` fu
 
 Set `EXPO_PUBLIC_SENTRY_DSN` to enable runtime capture. The settings screen includes a test capture button. For production source maps, add your Sentry org/project/auth token to CI and run the Sentry Expo upload step during builds.
 
+## Legal
+
+In-app legal documents live in `src/lib/legal.ts` and are rendered through `app/legal/*`:
+
+- `/legal/terms` - Terms and Conditions
+- `/legal/privacy` - Privacy Policy
+- `/legal/subscriptions` - Subscription Terms
+- `/legal/community` - Community and Safety Guidelines
+
+The documents use these operator details:
+
+- Legal name: `Clyzio MB`
+- Company code: `307107260`
+- Address: `Polocko g. 2-2, LT-01204 Vilnius, Lithuania`
+- Phone: `+370 615 41336`
+
+Legal links appear in onboarding, login, registration, Settings, and the OutGo Plus paywall. For App Store review, also publish the Terms and Privacy Policy as publicly accessible web URLs and add them in App Store Connect. Apple requires a privacy policy URL for apps and subscription apps should include functional Terms and Privacy links in the app and metadata.
+
 ## RevenueCat
 
 RevenueCat is initialized in `app/_layout.tsx` through `src/lib/revenuecat.ts`. Supabase user IDs are sent as RevenueCat App User IDs after auth is restored. Settings includes basic customer-info and restore-purchases checks, plus an OutGo Plus paywall at `/paywall`.
@@ -168,6 +189,8 @@ npx eas env:create --environment production --name EXPO_PUBLIC_REVENUECAT_MONTHL
 npx eas env:create --environment production --name EXPO_PUBLIC_REVENUECAT_YEARLY_PRODUCT_ID --value outgo_plus_yearly
 npx eas env:create --environment production --name EXPO_PUBLIC_TERMS_URL --value https://your-domain.example/terms
 npx eas env:create --environment production --name EXPO_PUBLIC_PRIVACY_URL --value https://your-domain.example/privacy
+npx eas env:create --environment production --name EXPO_PUBLIC_LEGAL_EMAIL --value support@outgo.app
+npx eas env:create --environment production --name EXPO_PUBLIC_PRIVACY_EMAIL --value privacy@outgo.app
 ```
 
 Then run the first iOS archive interactively so EAS can validate or create Apple signing credentials:
@@ -187,7 +210,7 @@ For submission, App Store Connect must have an app record for `OutGo` with bundl
 - Native date/time picker for event creation
 - Calendar export and quiet reminder settings
 - Supabase Edge Functions for moderation workflows
-- RevenueCat paywall screen, products, offerings and premium entitlement UX
+- Subscriber-only feature gates and subscription management UX
 - OpenAI-assisted event drafting in a separate `src/services/openai/` module, disabled unless explicitly configured
 - City-specific discovery pages with localized categories and featured neighborhoods
 - End-to-end tests with seeded local Supabase data

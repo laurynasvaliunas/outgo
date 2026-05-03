@@ -51,6 +51,16 @@ export default function OnboardingScreen() {
           <Button title="I already have an account" variant="secondary" />
         </Link>
       </View>
+
+      <View style={styles.legal}>
+        <Link href="/legal/terms" asChild>
+          <Text style={styles.legalLink}>Terms</Text>
+        </Link>
+        <Text style={styles.legalText}>and</Text>
+        <Link href="/legal/privacy" asChild>
+          <Text style={styles.legalLink}>Privacy</Text>
+        </Link>
+      </View>
     </Screen>
   );
 }
@@ -105,5 +115,21 @@ const styles = StyleSheet.create({
   },
   actions: {
     gap: spacing.md
+  },
+  legal: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.xs
+  },
+  legalText: {
+    color: colors.textMuted,
+    fontSize: typography.small,
+    fontWeight: "700"
+  },
+  legalLink: {
+    color: colors.primaryDark,
+    fontSize: typography.small,
+    fontWeight: "900"
   }
 });

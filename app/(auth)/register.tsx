@@ -92,6 +92,18 @@ export default function RegisterScreen() {
           icon={<UserPlus size={18} color="#FFFFFF" />}
           onPress={submit}
         />
+        <View style={styles.legal}>
+          <Text style={styles.legalText}>By creating an account, you agree to the</Text>
+          <View style={styles.legalLinks}>
+            <Link href="/legal/terms" asChild>
+              <Text style={styles.legalLink}>Terms</Text>
+            </Link>
+            <Text style={styles.legalText}>and</Text>
+            <Link href="/legal/privacy" asChild>
+              <Text style={styles.legalLink}>Privacy Policy</Text>
+            </Link>
+          </View>
+        </View>
       </View>
       <Link href="/login" asChild>
         <Button title="I already have an account" variant="ghost" />
@@ -117,5 +129,25 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: spacing.md
+  },
+  legal: {
+    gap: spacing.xs,
+    alignItems: "center"
+  },
+  legalLinks: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs
+  },
+  legalText: {
+    color: colors.textMuted,
+    fontSize: typography.small,
+    fontWeight: "700",
+    textAlign: "center"
+  },
+  legalLink: {
+    color: colors.primaryDark,
+    fontSize: typography.small,
+    fontWeight: "900"
   }
 });

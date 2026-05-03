@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
-  Linking,
   Pressable,
   StyleSheet,
   Text,
@@ -36,9 +35,6 @@ import {
 import { colors, radii, spacing, typography } from "@/lib/theme";
 
 type PlanKey = "monthly" | "yearly";
-
-const TERMS_URL = process.env.EXPO_PUBLIC_TERMS_URL;
-const PRIVACY_URL = process.env.EXPO_PUBLIC_PRIVACY_URL;
 
 export default function PaywallScreen() {
   const purchases = useRevenueCatCustomerInfo();
@@ -258,9 +254,11 @@ export default function PaywallScreen() {
       </Text>
 
       <View style={styles.legalLinks}>
-        <LegalLink title="Terms" url={TERMS_URL} />
+        <LegalLink title="Terms" route="/legal/terms" />
         <Text style={styles.legalDivider}>·</Text>
-        <LegalLink title="Privacy" url={PRIVACY_URL} />
+        <LegalLink title="Subscription Terms" route="/legal/subscriptions" />
+        <Text style={styles.legalDivider}>·</Text>
+        <LegalLink title="Privacy" route="/legal/privacy" />
       </View>
     </Screen>
   );
@@ -328,21 +326,9 @@ function PlanCard({
   );
 }
 
-function LegalLink({ title, url }: { title: string; url?: string }) {
-  const open = () => {
-    if (!url) {
-      Alert.alert(
-        `${title} not set`,
-        `Add EXPO_PUBLIC_${title.toUpperCase()}_URL before App Store review.`
-      );
-      return;
-    }
-
-    void Linking.openURL(url);
-  };
-
+function LegalLink({ title, route }: { title: string; route: "/legal/terms" | "/legal/privacy" | "/legal/subscriptions" }) {
   return (
-    <Pressable accessibilityRole="link" onPress={open}>
+    <Pressable accessibilityRole="link" onPress={() => router.push(route)}>
       <Text style={styles.legalLink}>{title}</Text>
     </Pressable>
   );

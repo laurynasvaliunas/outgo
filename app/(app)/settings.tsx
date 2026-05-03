@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { Alert, StyleSheet, Switch, Text, View } from "react-native";
 import { router } from "expo-router";
-import { Bug, CreditCard, LogOut, RefreshCw, ShieldAlert } from "lucide-react-native";
+import {
+  Bug,
+  CreditCard,
+  FileText,
+  LogOut,
+  RefreshCw,
+  ShieldAlert
+} from "lucide-react-native";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Screen } from "@/components/ui/Screen";
@@ -121,6 +128,12 @@ export default function SettingsScreen() {
         title="Open OutGo Plus"
         icon={<CreditCard size={18} color="#FFFFFF" />}
         onPress={() => router.push("/paywall")}
+      />
+      <Button
+        title="Legal information"
+        variant="secondary"
+        icon={<FileText size={18} color={colors.primaryDark} />}
+        onPress={() => router.push("/legal")}
       />
       <Button
         title="Check RevenueCat"

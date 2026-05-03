@@ -1,0 +1,112 @@
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { router } from "expo-router";
+import { ArrowLeft } from "lucide-react-native";
+import { Card } from "@/components/ui/Card";
+import { Screen } from "@/components/ui/Screen";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { legalCompany, type LegalDocument } from "@/lib/legal";
+import { colors, radii, spacing, typography } from "@/lib/theme";
+
+type LegalDocumentViewProps = {
+  document: LegalDocument;
+};
+
+export function LegalDocumentView({ document }: LegalDocumentViewProps) {
+  return (
+    <Screen contentStyle={styles.screen}>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => router.back()}
+        style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+      >
+        <ArrowLeft size={20} color={colors.primaryDark} />
+        <Text style={styles.backText}>Back</Text>
+      </Pressable>
+
+      <SectionHeader
+        title={document.title}
+        subtitle={`${document.subtitle} Effective ${document.effectiveDate}.`}
+      />
+
+      <Card style={styles.companyCard}>
+        <Text style={styles.companyTitle}>Legal operator</Text>
+        <Text style={styles.companyText}>{legalCompany.legalName}</Text>
+        <Text style={styles.companyText}>Company code {legalCompany.companyCode}</Text>
+        <Text style={styles.companyText}>{legalCompany.address}</Text>
+        <Text style={styles.companyText}>{legalCompany.phone}</Text>
+        <Text style={styles.companyText}>{legalCompany.supportEmail}</Text>
+      </Card>
+
+      <View style={styles.sections}>
+        {document.sections.map((section) => (
+          <Card key={section.title} style={styles.sectionCard}>
+            <Text style={styles.sectionTitle}>{section.title}</Text>
+            {section.body.map((paragraph) => (
+              <Text key={paragraph} style={styles.paragraph}>
+                {paragraph}
+              </Text>
+            ))}
+          </Card>
+        ))}
+      </View>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    gap: spacing.lg
+  },
+  backButton: {
+    alignSelf: "flex-start",
+    minHeight: 42,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+  pressed: {
+    opacity: 0.82
+  },
+  backText: {
+    color: colors.primaryDark,
+    fontSize: typography.small,
+    fontWeight: "900"
+  },
+  companyCard: {
+    gap: spacing.xs,
+    backgroundColor: colors.primarySoft
+  },
+  companyTitle: {
+    color: colors.primaryDark,
+    fontSize: typography.small,
+    fontWeight: "900"
+  },
+  companyText: {
+    color: colors.text,
+    fontSize: typography.small,
+    lineHeight: 19,
+    fontWeight: "700"
+  },
+  sections: {
+    gap: spacing.md
+  },
+  sectionCard: {
+    gap: spacing.sm
+  },
+  sectionTitle: {
+    color: colors.text,
+    fontSize: typography.subheading,
+    fontWeight: "900",
+    letterSpacing: 0
+  },
+  paragraph: {
+    color: colors.text,
+    fontSize: typography.body,
+    lineHeight: 24
+  }
+});
