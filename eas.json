@@ -30,6 +30,7 @@
   "submit": {
     "production": {
       "ios": {
+        "ascAppId": "6764353828",
         "bundleIdentifier": "com.outgo.app",
         "appName": "OutGo",
         "language": "en-US"
