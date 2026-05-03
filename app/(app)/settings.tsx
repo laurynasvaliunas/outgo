@@ -1,19 +1,26 @@
 import { useState } from "react";
 import { Alert, StyleSheet, Switch, Text, View } from "react-native";
 import { router } from "expo-router";
-import { Bug, LogOut, ShieldAlert } from "lucide-react-native";
+import { Bug, CreditCard, LogOut, RefreshCw, ShieldAlert } from "lucide-react-native";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Screen } from "@/components/ui/Screen";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { useAuth } from "@/hooks/useAuth";
+import { useRevenueCatCustomerInfo } from "@/hooks/useRevenueCat";
 import { signOut } from "@/services/supabase/auth";
 import { Sentry } from "@/lib/sentry";
+import {
+  getActiveRevenueCatEntitlements,
+  restoreRevenueCatPurchases
+} from "@/lib/revenuecat";
 import { colors, spacing, typography } from "@/lib/theme";
 
 export default function SettingsScreen() {
   const { profile } = useAuth();
+  const purchases = useRevenueCatCustomerInfo();
   const [safetyReminders, setSafetyReminders] = useState(true);
+  const [restoringPurchases, setRestoringPurchases] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -21,6 +28,48 @@ export default function SettingsScreen() {
       router.replace("/login");
     } catch (error) {
       Alert.alert("Could not sign out", error instanceof Error ? error.message : "Try again.");
+    }
+  };
+
+  const handleCheckPurchases = async () => {
+    const customerInfo = await purchases.refresh();
+    if (!customerInfo) {
+      Alert.alert(
+        "RevenueCat unavailable",
+        purchases.available
+          ? purchases.error ?? "Could not load customer info."
+          : "Add RevenueCat API keys and run an EAS build to test purchases."
+      );
+      return;
+    }
+
+    const activeEntitlements = getActiveRevenueCatEntitlements(customerInfo);
+    Alert.alert(
+      "RevenueCat connected",
+      activeEntitlements.length > 0
+        ? `Active entitlements: ${activeEntitlements.join(", ")}`
+        : "Customer info loaded. No active entitlements yet."
+    );
+  };
+
+  const handleRestorePurchases = async () => {
+    setRestoringPurchases(true);
+    try {
+      const customerInfo = await restoreRevenueCatPurchases();
+      const activeEntitlements = getActiveRevenueCatEntitlements(customerInfo);
+      Alert.alert(
+        "Restore complete",
+        activeEntitlements.length > 0
+          ? `Active entitlements: ${activeEntitlements.join(", ")}`
+          : "No active purchases were found for this account."
+      );
+    } catch (error) {
+      Alert.alert(
+        "Could not restore purchases",
+        error instanceof Error ? error.message : "Please try again."
+      );
+    } finally {
+      setRestoringPurchases(false);
     }
   };
 
@@ -55,6 +104,33 @@ export default function SettingsScreen() {
           </Text>
         </View>
       </Card>
+      <Card style={styles.moderation}>
+        <CreditCard size={22} color={colors.primaryDark} />
+        <View style={styles.rowCopy}>
+          <Text style={styles.rowTitle}>RevenueCat</Text>
+          <Text style={styles.rowText}>
+            {purchases.available
+              ? purchases.entitlementId
+                ? `Watching entitlement: ${purchases.entitlementId}`
+                : "SDK configured. No entitlement ID set yet."
+              : "Add API keys to enable purchase checks."}
+          </Text>
+        </View>
+      </Card>
+      <Button
+        title="Check RevenueCat"
+        variant="secondary"
+        loading={purchases.loading}
+        icon={<RefreshCw size={18} color={colors.primaryDark} />}
+        onPress={handleCheckPurchases}
+      />
+      <Button
+        title="Restore purchases"
+        variant="secondary"
+        loading={restoringPurchases}
+        icon={<CreditCard size={18} color={colors.primaryDark} />}
+        onPress={handleRestorePurchases}
+      />
       <Button
         title="Send Sentry test message"
         variant="secondary"

@@ -9,6 +9,7 @@ The app is intentionally not built like an addictive social feed. Users browse a
 - Expo React Native with TypeScript and Expo Router
 - Supabase Auth, Postgres, Storage, Realtime and Row Level Security
 - Sentry error tracking
+- RevenueCat purchases/subscriptions
 - React Native Maps
 - StyleSheet-based design system
 - Zod validation
@@ -20,6 +21,7 @@ The app is intentionally not built like an addictive social feed. Users browse a
 - `app/` - Expo Router screens and navigation groups
 - `src/components/` - reusable UI and event components
 - `src/hooks/` - auth, events and realtime chat hooks
+- `src/lib/revenuecat.ts` - RevenueCat SDK setup and entitlement helpers
 - `src/services/supabase/` - typed Supabase client and data services
 - `src/types/` - domain and Supabase database types
 - `src/validation/` - Zod schemas
@@ -47,6 +49,9 @@ EXPO_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-supabase-publishable-key
 EXPO_PUBLIC_SENTRY_DSN=
 EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=
+EXPO_PUBLIC_REVENUECAT_IOS_API_KEY=
+EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY=
+EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID=
 EXPO_PUBLIC_DEFAULT_CITY=Worldwide
 ```
 
@@ -76,7 +81,7 @@ For a hosted Supabase project, you can also paste `supabase/seed/seed_vilnius.sq
 npm run start
 ```
 
-Use Expo Go for a quick pass, or create a development build if you need production-like native map configuration. Add a Google Maps API key for Android standalone builds.
+Use Expo Go for a quick pass, or create a development/TestFlight build for real RevenueCat purchase testing and production-like native map configuration. Add a Google Maps API key for Android standalone builds.
 
 ## Supabase Notes
 
@@ -109,6 +114,20 @@ The join rules are enforced both by RLS and a trigger-backed `can_join_event` fu
 
 Set `EXPO_PUBLIC_SENTRY_DSN` to enable runtime capture. The settings screen includes a test capture button. For production source maps, add your Sentry org/project/auth token to CI and run the Sentry Expo upload step during builds.
 
+## RevenueCat
+
+RevenueCat is initialized in `app/_layout.tsx` through `src/lib/revenuecat.ts`. Supabase user IDs are sent as RevenueCat App User IDs after auth is restored, and Settings includes basic customer-info and restore-purchases checks.
+
+Configure platform API keys:
+
+```bash
+EXPO_PUBLIC_REVENUECAT_IOS_API_KEY=your-revenuecat-ios-key
+EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY=your-revenuecat-android-key
+EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID=your-entitlement-id
+```
+
+Real purchases require an EAS development build or TestFlight/App Store build. Expo Go can preview app flows, but it cannot complete real in-app purchases.
+
 ## TestFlight
 
 The EAS project is `@laurynas.valiunas/outgo` and the iOS bundle ID is `com.outgo.app`.
@@ -126,6 +145,9 @@ Optional production env vars:
 ```bash
 npx eas env:create --environment production --name EXPO_PUBLIC_SENTRY_DSN --value your-sentry-dsn
 npx eas env:create --environment production --name EXPO_PUBLIC_GOOGLE_MAPS_API_KEY --value your-google-maps-key
+npx eas env:create --environment production --name EXPO_PUBLIC_REVENUECAT_IOS_API_KEY --value your-revenuecat-ios-key
+npx eas env:create --environment production --name EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY --value your-revenuecat-android-key
+npx eas env:create --environment production --name EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID --value your-entitlement-id
 ```
 
 Then run the first iOS archive interactively so EAS can validate or create Apple signing credentials:
@@ -145,6 +167,7 @@ For submission, App Store Connect must have an app record for `OutGo` with bundl
 - Native date/time picker for event creation
 - Calendar export and quiet reminder settings
 - Supabase Edge Functions for moderation workflows
+- RevenueCat paywall screen, products, offerings and premium entitlement UX
 - OpenAI-assisted event drafting in a separate `src/services/openai/` module, disabled unless explicitly configured
 - City-specific discovery pages with localized categories and featured neighborhoods
 - End-to-end tests with seeded local Supabase data

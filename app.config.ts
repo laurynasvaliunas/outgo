@@ -72,6 +72,13 @@ const config: ExpoConfig = {
       process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
       process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
     sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+    revenueCatIosApiKey:
+      process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY ??
+      process.env.EXPO_PUBLIC_REVENUECAT_API_KEY,
+    revenueCatAndroidApiKey:
+      process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY ??
+      process.env.EXPO_PUBLIC_REVENUECAT_API_KEY,
+    revenueCatEntitlementId: process.env.EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID,
     defaultCity: process.env.EXPO_PUBLIC_DEFAULT_CITY ?? "Worldwide",
     eas: {
       projectId: "c72404a0-814b-4f55-bb95-4ed53424de9c"
