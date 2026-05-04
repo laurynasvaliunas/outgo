@@ -8,11 +8,13 @@ import {
   type ViewStyle,
   View
 } from "react-native";
-import { colors, radii, spacing, typography } from "@/lib/theme";
+import type { ReactNode } from "react";
+import { colors, fontFamilies, radii, spacing, textStyles } from "@/lib/theme";
 
 type InputProps = TextInputProps & {
   label: string;
   error?: string;
+  leftIcon?: ReactNode;
   containerStyle?: StyleProp<ViewStyle>;
 };
 
@@ -21,6 +23,7 @@ export function Input({
   error,
   style,
   multiline,
+  leftIcon,
   containerStyle,
   onFocus,
   onBlur,
@@ -31,26 +34,35 @@ export function Input({
   return (
     <View style={[styles.wrapper, containerStyle]}>
       <Text style={styles.label}>{label}</Text>
-      <TextInput
-        placeholderTextColor={colors.textMuted}
-        multiline={multiline}
-        onFocus={(event) => {
-          setFocused(true);
-          onFocus?.(event);
-        }}
-        onBlur={(event) => {
-          setFocused(false);
-          onBlur?.(event);
-        }}
+      <View
         style={[
-          styles.input,
+          styles.inputFrame,
           focused && styles.inputFocused,
-          multiline && styles.multiline,
           error && styles.inputError,
-          style
+          multiline && styles.multilineFrame
         ]}
-        {...props}
-      />
+      >
+        {leftIcon ? <View style={styles.leftIcon}>{leftIcon}</View> : null}
+        <TextInput
+          placeholderTextColor={colors.textSubtle}
+          multiline={multiline}
+          onFocus={(event) => {
+            setFocused(true);
+            onFocus?.(event);
+          }}
+          onBlur={(event) => {
+            setFocused(false);
+            onBlur?.(event);
+          }}
+          style={[
+            styles.input,
+            Boolean(leftIcon) && styles.inputWithIcon,
+            multiline && styles.multiline,
+            style
+          ]}
+          {...props}
+        />
+      </View>
       {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
   );
@@ -58,26 +70,43 @@ export function Input({
 
 const styles = StyleSheet.create({
   wrapper: {
-    gap: spacing.xs
+    gap: spacing.sm
   },
   label: {
-    fontSize: typography.small,
-    fontWeight: "900",
-    color: colors.text
+    ...textStyles.small,
+    fontFamily: fontFamilies.bold,
+    color: colors.textMuted
   },
-  input: {
+  inputFrame: {
     minHeight: 50,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
-    backgroundColor: colors.backgroundElevated,
-    paddingHorizontal: spacing.md,
+    backgroundColor: colors.surface,
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  input: {
+    flex: 1,
+    minHeight: 50,
+    paddingHorizontal: spacing.ml,
     color: colors.text,
-    fontSize: typography.body
+    ...textStyles.body
   },
   inputFocused: {
-    borderColor: colors.primary,
-    backgroundColor: colors.surface
+    borderColor: colors.primary500,
+    backgroundColor: colors.white
+  },
+  leftIcon: {
+    paddingLeft: spacing.ml,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  inputWithIcon: {
+    paddingLeft: spacing.sm
+  },
+  multilineFrame: {
+    alignItems: "flex-start"
   },
   multiline: {
     minHeight: 112,
@@ -89,6 +118,6 @@ const styles = StyleSheet.create({
   },
   error: {
     color: colors.danger,
-    fontSize: typography.small
+    ...textStyles.small
   }
 });

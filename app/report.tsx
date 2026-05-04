@@ -11,7 +11,7 @@ import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { useAuth } from "@/hooks/useAuth";
 import { createReport } from "@/services/supabase/reports";
 import { reportSchema, type ReportInput } from "@/validation/report";
-import { colors, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, spacing, textStyles } from "@/lib/theme";
 import { track } from "@/lib/analytics";
 
 const reasons: { label: string; value: ReportInput["report_type"] }[] = [
@@ -135,13 +135,12 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   },
   cardTitle: {
+    ...textStyles.body,
+    fontFamily: fontFamilies.extraBold,
     color: colors.text,
-    fontSize: typography.body,
-    fontWeight: "900"
   },
   cardText: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontSize: typography.small,
-    lineHeight: 19
   }
 });

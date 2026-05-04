@@ -21,7 +21,7 @@ import {
   getActiveRevenueCatEntitlements,
   restoreRevenueCatPurchases
 } from "@/lib/revenuecat";
-import { colors, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, spacing, textStyles } from "@/lib/theme";
 
 export default function SettingsScreen() {
   const { profile } = useAuth();
@@ -45,7 +45,8 @@ export default function SettingsScreen() {
         "RevenueCat unavailable",
         purchases.available
           ? purchases.error ?? "Could not load customer info."
-          : "Add RevenueCat API keys and run an EAS build to test purchases."
+          : purchases.unavailableMessage ??
+              "Add RevenueCat API keys and run an EAS build to test purchases."
       );
       return;
     }
@@ -97,8 +98,8 @@ export default function SettingsScreen() {
         <Switch
           value={safetyReminders}
           onValueChange={setSafetyReminders}
-          trackColor={{ true: colors.primarySoft, false: colors.border }}
-          thumbColor={safetyReminders ? colors.primary : colors.textMuted}
+          trackColor={{ true: colors.primary100, false: colors.border }}
+          thumbColor={safetyReminders ? colors.primary500 : colors.textMuted}
         />
       </Card>
       <Card style={styles.moderation}>
@@ -184,13 +185,12 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   },
   rowTitle: {
+    ...textStyles.body,
+    fontFamily: fontFamilies.extraBold,
     color: colors.text,
-    fontSize: typography.body,
-    fontWeight: "900"
   },
   rowText: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontSize: typography.small,
-    lineHeight: 19
   }
 });

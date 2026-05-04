@@ -1,5 +1,5 @@
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { colors, spacing, typography } from "@/lib/theme";
+import { colors, spacing, textStyles } from "@/lib/theme";
 
 type LoadingStateProps = {
   message?: string;
@@ -16,14 +16,13 @@ export function LoadingState({ message = "Loading..." }: LoadingStateProps) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingVertical: spacing.xxl,
-    gap: spacing.sm,
+    paddingVertical: spacing.huge,
+    gap: spacing.md,
     alignItems: "center",
     justifyContent: "center"
   },
   text: {
     color: colors.textMuted,
-    fontSize: typography.small,
-    fontWeight: "800"
+    ...textStyles.small
   }
 });

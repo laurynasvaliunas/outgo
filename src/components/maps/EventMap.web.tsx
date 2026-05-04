@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { colors, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, spacing, textStyles } from "@/lib/theme";
 import type { Coordinates } from "@/lib/distance";
 import type { EventWithMeta } from "@/types/domain";
 
@@ -29,14 +29,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceMuted
   },
   title: {
+    ...textStyles.body,
+    fontFamily: fontFamilies.extraBold,
     color: colors.text,
-    fontSize: typography.body,
-    fontWeight: "900",
     textAlign: "center"
   },
   text: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontSize: typography.small,
     textAlign: "center"
   }
 });

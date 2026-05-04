@@ -14,7 +14,7 @@ import { createEvent } from "@/services/supabase/events";
 import { eventSchema } from "@/validation/event";
 import { useAuth } from "@/hooks/useAuth";
 import { toInputDateTime } from "@/lib/date";
-import { colors, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, spacing, textStyles } from "@/lib/theme";
 import { track } from "@/lib/analytics";
 
 export default function CreateEventScreen() {
@@ -187,14 +187,13 @@ const styles = StyleSheet.create({
   safetyCard: {
     flexDirection: "row",
     gap: spacing.md,
-    backgroundColor: colors.blueSoft
+    backgroundColor: colors.infoSoft,
+    borderColor: `${colors.primary500}33`
   },
   safetyText: {
+    ...textStyles.small,
     flex: 1,
     color: colors.text,
-    fontSize: typography.small,
-    lineHeight: 19,
-    fontWeight: "700"
   },
   form: {
     gap: spacing.md
@@ -203,21 +202,19 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   label: {
+    ...textStyles.small,
+    fontFamily: fontFamilies.bold,
     color: colors.text,
-    fontSize: typography.small,
-    fontWeight: "800"
   },
   sectionTitle: {
-    color: colors.primaryDark,
-    fontSize: typography.small,
-    fontWeight: "900",
+    ...textStyles.small,
+    fontFamily: fontFamilies.extraBold,
+    color: colors.primary500,
     textTransform: "uppercase"
   },
   helper: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontSize: typography.small,
-    lineHeight: 19,
-    fontWeight: "700",
     marginTop: -spacing.sm
   },
   pills: {
@@ -227,7 +224,7 @@ const styles = StyleSheet.create({
   },
   error: {
     color: colors.danger,
-    fontSize: typography.small
+    ...textStyles.small
   },
   inline: {
     flexDirection: "row",

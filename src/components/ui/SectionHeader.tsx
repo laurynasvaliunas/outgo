@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 import type { ReactNode } from "react";
-import { colors, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, spacing, textStyles } from "@/lib/theme";
 
 type SectionHeaderProps = {
   title: string;
@@ -32,15 +32,13 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   },
   title: {
+    ...textStyles.heading,
+    fontFamily: fontFamilies.extraBold,
     color: colors.text,
-    fontSize: typography.heading,
-    fontWeight: "900",
-    letterSpacing: 0
   },
   subtitle: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontSize: typography.small,
-    lineHeight: 20,
-    fontWeight: "700"
+    fontFamily: fontFamilies.medium
   }
 });

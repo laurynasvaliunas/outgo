@@ -20,19 +20,19 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Screen } from "@/components/ui/Screen";
-import { SectionHeader } from "@/components/ui/SectionHeader";
 import { useRevenueCatCustomerInfo } from "@/hooks/useRevenueCat";
 import { track } from "@/lib/analytics";
 import {
   getRevenueCatPaywallOffering,
   getRevenueCatPaywallPackages,
+  getRevenueCatUnavailableMessage,
   hasActiveRevenueCatEntitlement,
   isRevenueCatAvailable,
   isRevenueCatPurchaseCancelled,
   purchaseRevenueCatPackage,
   restoreRevenueCatPurchases
 } from "@/lib/revenuecat";
-import { colors, radii, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, radii, shadows, spacing, textStyles } from "@/lib/theme";
 
 type PlanKey = "monthly" | "yearly";
 
@@ -167,7 +167,10 @@ export default function PaywallScreen() {
         <TopBar />
         <EmptyState
           title="RevenueCat is not configured"
-          message="Add the RevenueCat public SDK key and run an EAS development or TestFlight build to test subscriptions."
+          message={
+            getRevenueCatUnavailableMessage() ??
+            "Add the RevenueCat public SDK key and run an EAS development or TestFlight build to test subscriptions."
+          }
           actionTitle="Try again"
           onAction={loadOffering}
         />
@@ -176,16 +179,18 @@ export default function PaywallScreen() {
   }
 
   return (
-    <Screen contentStyle={styles.screen}>
+    <Screen backgroundColor={colors.darkBg} contentStyle={styles.screen}>
       <TopBar />
       <View style={styles.header}>
         <View style={styles.iconCircle}>
-          <Sparkles size={28} color={colors.primaryDark} />
+          <Sparkles size={28} color={colors.amber500} />
         </View>
-        <SectionHeader
-          title={active ? "OutGo Plus is active" : "OutGo Plus"}
-          subtitle="Support an offline-first community and unlock the Plus plan as new member features roll out."
-        />
+        <Text style={styles.heroTitle}>
+          {active ? "OutGo Plus is active" : "OutGo Plus"}
+        </Text>
+        <Text style={styles.heroSubtitle}>
+          Support an offline-first community and unlock the Plus plan as new member features roll out.
+        </Text>
       </View>
 
       <Card style={styles.benefitsCard}>
@@ -195,7 +200,7 @@ export default function PaywallScreen() {
           "Support a calmer app that helps people meet offline."
         ].map((benefit) => (
           <View key={benefit} style={styles.benefitRow}>
-            <Check size={18} color={colors.success} />
+            <Check size={18} color={colors.amber500} />
             <Text style={styles.benefitText}>{benefit}</Text>
           </View>
         ))}
@@ -233,6 +238,7 @@ export default function PaywallScreen() {
         <View style={styles.actions}>
           <Button
             title={active ? "OutGo Plus active" : "Continue"}
+            variant="amber"
             loading={purchasingPlan === selectedPlan}
             disabled={active || !selectedRevenueCatPackage}
             icon={<CreditCard size={18} color="#FFFFFF" />}
@@ -272,7 +278,7 @@ function TopBar() {
         onPress={() => router.back()}
         style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
       >
-        <ArrowLeft size={22} color={colors.primaryDark} />
+        <ArrowLeft size={22} color={colors.darkText} />
       </Pressable>
     </View>
   );
@@ -345,10 +351,10 @@ const styles = StyleSheet.create({
   backButton: {
     width: 44,
     height: 44,
-    borderRadius: radii.md,
-    backgroundColor: colors.surface,
+    borderRadius: radii.pill,
+    backgroundColor: `${colors.white}12`,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: `${colors.white}20`,
     alignItems: "center",
     justifyContent: "center"
   },
@@ -356,19 +362,33 @@ const styles = StyleSheet.create({
     opacity: 0.82
   },
   header: {
-    gap: spacing.md
+    gap: spacing.md,
+    alignItems: "center"
   },
   iconCircle: {
-    width: 58,
-    height: 58,
+    width: 68,
+    height: 68,
     borderRadius: radii.pill,
-    backgroundColor: colors.primarySoft,
+    backgroundColor: `${colors.white}12`,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: `${colors.white}18`
+  },
+  heroTitle: {
+    ...textStyles.title,
+    color: colors.white,
+    textAlign: "center"
+  },
+  heroSubtitle: {
+    ...textStyles.body,
+    color: colors.darkTextSub,
+    textAlign: "center"
   },
   benefitsCard: {
     gap: spacing.md,
-    backgroundColor: colors.surface
+    backgroundColor: `${colors.white}10`,
+    borderColor: `${colors.white}16`
   },
   benefitRow: {
     flexDirection: "row",
@@ -376,26 +396,26 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   benefitText: {
+    ...textStyles.body,
+    fontFamily: fontFamilies.semiBold,
     flex: 1,
-    color: colors.text,
-    fontSize: typography.body,
-    lineHeight: 22,
-    fontWeight: "700"
+    color: colors.darkText
   },
   planList: {
     gap: spacing.md
   },
   planCard: {
-    borderRadius: radii.md,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: radii.xl,
+    backgroundColor: `${colors.white}10`,
+    borderWidth: 1.5,
+    borderColor: `${colors.white}14`,
     padding: spacing.lg,
     gap: spacing.sm
   },
   planCardSelected: {
-    borderColor: colors.primaryDark,
-    backgroundColor: colors.primarySoft
+    borderColor: colors.primary500,
+    backgroundColor: colors.primary500,
+    ...shadows.pin
   },
   planCardDisabled: {
     opacity: 0.64
@@ -407,18 +427,17 @@ const styles = StyleSheet.create({
     gap: spacing.md
   },
   planTitle: {
-    color: colors.text,
-    fontSize: typography.subheading,
-    fontWeight: "900"
+    ...textStyles.subheading,
+    fontFamily: fontFamilies.extraBold,
+    color: colors.darkText
   },
   badge: {
-    color: colors.surface,
-    backgroundColor: colors.primaryDark,
+    ...textStyles.tiny,
+    color: colors.white,
+    backgroundColor: colors.amber500,
     borderRadius: radii.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
-    fontSize: typography.tiny,
-    fontWeight: "900",
     overflow: "hidden"
   },
   priceRow: {
@@ -427,30 +446,24 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   price: {
-    color: colors.text,
-    fontSize: typography.title,
-    fontWeight: "900",
-    letterSpacing: 0
+    ...textStyles.title,
+    color: colors.white
   },
   cadence: {
-    color: colors.textMuted,
-    fontSize: typography.small,
-    fontWeight: "800",
+    ...textStyles.small,
+    color: colors.darkTextSub,
     paddingBottom: spacing.xs
   },
   note: {
-    color: colors.textMuted,
-    fontSize: typography.small,
-    lineHeight: 19,
-    fontWeight: "700"
+    ...textStyles.small,
+    color: colors.darkTextSub
   },
   actions: {
     gap: spacing.md
   },
   storeNote: {
-    color: colors.textMuted,
-    fontSize: typography.small,
-    lineHeight: 19,
+    ...textStyles.small,
+    color: colors.darkMuted,
     textAlign: "center"
   },
   legalLinks: {
@@ -460,12 +473,12 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   legalLink: {
-    color: colors.primaryDark,
-    fontSize: typography.small,
-    fontWeight: "900"
+    ...textStyles.small,
+    fontFamily: fontFamilies.bold,
+    color: colors.darkTextSub
   },
   legalDivider: {
-    color: colors.textMuted,
-    fontSize: typography.small
+    ...textStyles.small,
+    color: colors.darkMuted
   }
 });

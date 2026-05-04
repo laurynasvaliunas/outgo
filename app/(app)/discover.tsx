@@ -11,7 +11,7 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 import { EventCard } from "@/components/events/EventCard";
 import { EventFilters } from "@/components/events/EventFilters";
 import { useEvents } from "@/hooks/useEvents";
-import { colors, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, spacing, textStyles } from "@/lib/theme";
 import type { EventFilters as Filters } from "@/types/domain";
 
 export default function DiscoverScreen() {
@@ -110,18 +110,16 @@ const styles = StyleSheet.create({
   },
   positioning: {
     gap: spacing.sm,
-    backgroundColor: colors.primaryDark
+    backgroundColor: colors.primary900
   },
   positioningTitle: {
+    ...textStyles.heading,
+    fontFamily: fontFamilies.extraBold,
     color: colors.surface,
-    fontSize: typography.heading,
-    fontWeight: "900",
-    letterSpacing: 0
   },
   positioningText: {
+    ...textStyles.body,
     color: colors.primarySoft,
-    fontSize: typography.body,
-    lineHeight: 23
   },
   actions: {
     flexDirection: "row",
@@ -143,13 +141,12 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   },
   safetyTitle: {
+    ...textStyles.body,
+    fontFamily: fontFamilies.extraBold,
     color: colors.text,
-    fontSize: typography.body,
-    fontWeight: "900"
   },
   safetyText: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontSize: typography.small,
-    lineHeight: 19
   }
 });

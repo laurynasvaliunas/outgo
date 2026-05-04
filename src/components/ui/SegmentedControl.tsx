@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { colors, radii, spacing, typography } from "@/lib/theme";
+import { colors, radii, shadows, spacing, textStyles } from "@/lib/theme";
 
 type Option<T extends string> = {
   label: string;
@@ -49,7 +49,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceMuted,
     borderRadius: radii.pill,
     flexDirection: "row",
-    gap: spacing.xs
+    gap: spacing.xs,
+    borderWidth: 1,
+    borderColor: colors.border
   },
   option: {
     flex: 1,
@@ -61,13 +63,12 @@ const styles = StyleSheet.create({
   selected: {
     backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.borderStrong
+    borderColor: colors.border,
+    ...shadows.soft
   },
   label: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontWeight: "700",
-    fontSize: typography.small,
-    letterSpacing: 0
   },
   selectedLabel: {
     color: colors.text

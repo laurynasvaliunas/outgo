@@ -3,6 +3,7 @@ import type { CustomerInfo } from "react-native-purchases";
 import {
   getActiveRevenueCatEntitlements,
   getRevenueCatCustomerInfo,
+  getRevenueCatUnavailableMessage,
   hasActiveRevenueCatEntitlement,
   isRevenueCatAvailable,
   listenForRevenueCatCustomerInfo,
@@ -54,6 +55,7 @@ export function useRevenueCatCustomerInfo() {
     refresh,
     activeEntitlements: getActiveRevenueCatEntitlements(customerInfo),
     hasConfiguredEntitlement: hasActiveRevenueCatEntitlement(customerInfo),
-    entitlementId: revenueCatEntitlementId
+    entitlementId: revenueCatEntitlementId,
+    unavailableMessage: getRevenueCatUnavailableMessage()
   };
 }

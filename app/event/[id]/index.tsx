@@ -28,8 +28,8 @@ import {
   unfavoriteEvent
 } from "@/services/supabase/events";
 import { formatEventDate, relativeEventTime } from "@/lib/date";
-import { priceLabels } from "@/lib/categories";
-import { colors, spacing, typography } from "@/lib/theme";
+import { categoryMeta, priceLabels } from "@/lib/categories";
+import { colors, fontFamilies, radii, spacing, textStyles } from "@/lib/theme";
 import { track } from "@/lib/analytics";
 
 export default function EventDetailsScreen() {
@@ -127,10 +127,15 @@ export default function EventDetailsScreen() {
     );
   }
 
+  const meta = categoryMeta[event.category];
+
   return (
     <Screen>
+      <View style={[styles.hero, { backgroundColor: `${meta.color}1F` }]}>
+        <Text style={styles.heroEmoji}>{meta.emoji}</Text>
+        <CategoryPill category={event.category} selected />
+      </View>
       <View style={styles.header}>
-        <CategoryPill category={event.category} />
         <Text style={styles.title}>{event.title}</Text>
         <Text style={styles.description}>{event.description}</Text>
         <View style={styles.headerPills}>
@@ -272,16 +277,27 @@ const styles = StyleSheet.create({
   header: {
     gap: spacing.md
   },
+  hero: {
+    minHeight: 190,
+    borderRadius: radii.xl,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: "hidden"
+  },
+  heroEmoji: {
+    fontSize: 72,
+    lineHeight: 84
+  },
   title: {
+    ...textStyles.title,
     color: colors.text,
-    fontSize: typography.title,
-    fontWeight: "900",
-    letterSpacing: 0
   },
   description: {
+    ...textStyles.body,
     color: colors.textMuted,
-    fontSize: typography.body,
-    lineHeight: 24
   },
   headerPills: {
     flexDirection: "row",
@@ -289,23 +305,23 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   vibePill: {
+    ...textStyles.small,
+    fontFamily: fontFamilies.extraBold,
     color: colors.lavender,
     backgroundColor: colors.lavenderSoft,
     borderRadius: 999,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
-    fontSize: typography.small,
-    fontWeight: "900",
     overflow: "hidden"
   },
   statusPill: {
+    ...textStyles.small,
+    fontFamily: fontFamilies.extraBold,
     color: colors.success,
     backgroundColor: colors.successSoft,
     borderRadius: 999,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
-    fontSize: typography.small,
-    fontWeight: "900",
     overflow: "hidden"
   },
   metaCard: {
@@ -321,13 +337,13 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   },
   metaLine: {
+    ...textStyles.body,
+    fontFamily: fontFamilies.bold,
     color: colors.text,
-    fontSize: typography.body,
-    fontWeight: "800"
   },
   metaMuted: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontSize: typography.small
   },
   hostCard: {
     flexDirection: "row",
@@ -339,14 +355,13 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   },
   hostLabel: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontSize: typography.small,
-    fontWeight: "700"
   },
   hostName: {
+    ...textStyles.body,
+    fontFamily: fontFamilies.extraBold,
     color: colors.text,
-    fontSize: typography.body,
-    fontWeight: "900"
   },
   reportButton: {
     minHeight: 38,
@@ -367,14 +382,13 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   },
   safetyTitle: {
+    ...textStyles.body,
+    fontFamily: fontFamilies.extraBold,
     color: colors.text,
-    fontSize: typography.body,
-    fontWeight: "900"
   },
   safetyText: {
+    ...textStyles.small,
     color: colors.text,
-    fontSize: typography.small,
-    lineHeight: 19
   },
   actions: {
     gap: spacing.md

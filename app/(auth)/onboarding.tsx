@@ -1,135 +1,143 @@
-import { StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Link } from "expo-router";
-import { Coffee, MapPin, ShieldCheck } from "lucide-react-native";
 import { Screen } from "@/components/ui/Screen";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { colors, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, spacing, textStyles } from "@/lib/theme";
+
+const slides = [
+  {
+    emoji: "🌍",
+    title: "Real plans.\nReal people.",
+    subtitle: "Discover small, low-pressure social activities happening near you this week."
+  },
+  {
+    emoji: "🤝",
+    title: "Safe, small,\nand local.",
+    subtitle: "Every plan is public-place oriented, small-group, and hosted with clear expectations."
+  },
+  {
+    emoji: "📵",
+    title: "Less phone.\nMore life.",
+    subtitle: "OutGo is built to help you go outside, meet people, and put the screen away."
+  }
+];
 
 export default function OnboardingScreen() {
-  return (
-    <Screen centered>
-      <View style={styles.hero}>
-        <View style={styles.mark}>
-          <Coffee size={38} color={colors.primaryDark} />
-        </View>
-        <Text style={styles.title}>OutGo</Text>
-        <Text style={styles.subtitle}>
-          Small real-world plans for people who want less scrolling and more
-          actual life.
-        </Text>
-      </View>
+  const [slideIndex, setSlideIndex] = useState(0);
+  const slide = slides[slideIndex];
+  const lastSlide = slideIndex === slides.length - 1;
 
-      <View style={styles.cards}>
-        <Card style={styles.promise}>
-          <MapPin size={22} color={colors.blue} />
-          <View style={styles.promiseCopy}>
-            <Text style={styles.promiseTitle}>Local and low-pressure</Text>
-            <Text style={styles.promiseText}>
-              Coffee, walks, study sessions, games, language exchange and
-              phone-light meetups.
-            </Text>
-          </View>
-        </Card>
-        <Card style={styles.promise}>
-          <ShieldCheck size={22} color={colors.success} />
-          <View style={styles.promiseCopy}>
-            <Text style={styles.promiseTitle}>Built with safety cues</Text>
-            <Text style={styles.promiseText}>
-              Limited group sizes, public place reminders, host rules and
-              reporting from day one.
-            </Text>
-          </View>
-        </Card>
+  return (
+    <Screen centered contentStyle={styles.screen}>
+      <View style={styles.hero}>
+        <Text style={styles.emoji}>{slide.emoji}</Text>
+        <Text style={styles.title}>{slide.title}</Text>
+        <Text style={styles.subtitle}>{slide.subtitle}</Text>
+        <View style={styles.dots}>
+          {slides.map((item, index) => (
+            <Pressable
+              key={item.title}
+              accessibilityRole="button"
+              onPress={() => setSlideIndex(index)}
+              style={[styles.dot, index === slideIndex && styles.dotActive]}
+            />
+          ))}
+        </View>
       </View>
 
       <View style={styles.actions}>
-        <Link href="/register" asChild>
-          <Button title="Join OutGo" />
-        </Link>
+        {lastSlide ? (
+          <Link href="/register" asChild>
+            <Button title="Get started - it's free" />
+          </Link>
+        ) : (
+          <Button title="Continue" onPress={() => setSlideIndex((current) => current + 1)} />
+        )}
         <Link href="/login" asChild>
-          <Button title="I already have an account" variant="secondary" />
+          <Button title={lastSlide ? "Sign in" : "I already have an account"} variant="ghost" />
         </Link>
       </View>
 
       <View style={styles.legal}>
-        <Link href="/legal/terms" asChild>
-          <Text style={styles.legalLink}>Terms</Text>
-        </Link>
-        <Text style={styles.legalText}>and</Text>
-        <Link href="/legal/privacy" asChild>
-          <Text style={styles.legalLink}>Privacy</Text>
-        </Link>
+        <Text style={styles.legalText}>By continuing you agree to our</Text>
+        <View style={styles.legalLinks}>
+          <Link href="/legal/terms" asChild>
+            <Text style={styles.legalLink}>Terms</Text>
+          </Link>
+          <Text style={styles.legalText}>and</Text>
+          <Link href="/legal/privacy" asChild>
+            <Text style={styles.legalLink}>Privacy Policy</Text>
+          </Link>
+        </View>
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: {
-    gap: spacing.md,
-    alignItems: "center"
+  screen: {
+    justifyContent: "space-between",
+    paddingBottom: spacing.xxxl
   },
-  mark: {
-    width: 82,
-    height: 82,
-    borderRadius: 41,
-    backgroundColor: colors.primarySoft,
+  hero: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: colors.primary
+    gap: spacing.lg
+  },
+  emoji: {
+    fontSize: 72,
+    lineHeight: 84
   },
   title: {
-    fontSize: typography.title,
-    fontWeight: "900",
+    ...textStyles.title,
     color: colors.text,
-    letterSpacing: 0
+    textAlign: "center"
   },
   subtitle: {
+    ...textStyles.body,
     color: colors.textMuted,
-    fontSize: typography.body,
     textAlign: "center",
-    lineHeight: 24
+    maxWidth: 290
   },
-  cards: {
-    gap: spacing.md
-  },
-  promise: {
+  dots: {
     flexDirection: "row",
-    gap: spacing.md
+    gap: spacing.sm,
+    marginTop: spacing.xs
   },
-  promiseCopy: {
-    flex: 1,
-    gap: spacing.xs
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.border
   },
-  promiseTitle: {
-    color: colors.text,
-    fontSize: typography.body,
-    fontWeight: "800"
-  },
-  promiseText: {
-    color: colors.textMuted,
-    fontSize: typography.small,
-    lineHeight: 19
+  dotActive: {
+    width: 24,
+    backgroundColor: colors.primary500
   },
   actions: {
-    gap: spacing.md
+    gap: spacing.sm,
+    alignSelf: "stretch"
   },
   legal: {
+    gap: spacing.xs,
+    alignItems: "center"
+  },
+  legalLinks: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
     gap: spacing.xs
   },
   legalText: {
-    color: colors.textMuted,
-    fontSize: typography.small,
-    fontWeight: "700"
+    ...textStyles.tiny,
+    color: colors.textSubtle,
+    textAlign: "center"
   },
   legalLink: {
-    color: colors.primaryDark,
-    fontSize: typography.small,
-    fontWeight: "900"
+    ...textStyles.tiny,
+    fontFamily: fontFamilies.bold,
+    color: colors.primary500,
+    textDecorationLine: "underline"
   }
 });

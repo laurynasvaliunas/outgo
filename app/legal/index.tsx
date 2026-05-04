@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { Screen } from "@/components/ui/Screen";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { legalDocumentList, type LegalDocumentSlug } from "@/lib/legal";
-import { colors, radii, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, radii, spacing, textStyles } from "@/lib/theme";
 
 export default function LegalIndexScreen() {
   return (
@@ -61,9 +61,9 @@ const styles = StyleSheet.create({
     borderColor: colors.border
   },
   backText: {
-    color: colors.primaryDark,
-    fontSize: typography.small,
-    fontWeight: "900"
+    ...textStyles.small,
+    fontFamily: fontFamilies.extraBold,
+    color: colors.primary500
   },
   list: {
     gap: spacing.md
@@ -79,14 +79,13 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   },
   itemTitle: {
+    ...textStyles.body,
+    fontFamily: fontFamilies.extraBold,
     color: colors.text,
-    fontSize: typography.body,
-    fontWeight: "900"
   },
   itemText: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontSize: typography.small,
-    lineHeight: 19
   },
   pressed: {
     opacity: 0.82

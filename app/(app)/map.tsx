@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
-import { CalendarDays, MapPin, Plus, Users } from "lucide-react-native";
+import { MapPin, Plus } from "lucide-react-native";
 import { EventMap } from "@/components/maps/EventMap";
 import { EventFilters } from "@/components/events/EventFilters";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -11,11 +11,9 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 import { EventCard } from "@/components/events/EventCard";
 import { Button } from "@/components/ui/Button";
 import { useDeviceOrigin, useEvents } from "@/hooks/useEvents";
-import { categoryLabels, priceLabels } from "@/lib/categories";
-import { formatEventDate } from "@/lib/date";
 import { GLOBAL_MAP_CENTER } from "@/lib/distance";
-import { colors, radii, spacing, typography } from "@/lib/theme";
-import type { EventFilters as EventFilterState, EventWithMeta } from "@/types/domain";
+import { colors, fontFamilies, radii, shadows, spacing, textStyles } from "@/lib/theme";
+import type { EventFilters as EventFilterState } from "@/types/domain";
 
 const MAP_FILTERS: EventFilterState = {
   date: "week"
@@ -74,11 +72,13 @@ export default function MapScreen() {
 
         <View style={styles.topPanel}>
           <View style={styles.topRow}>
-            <View style={styles.topCopy}>
-              <Text style={styles.eyebrow}>OUTGO</Text>
-              <Text style={styles.mapTitle}>Happening this week</Text>
-              <Text style={styles.mapSubtitle}>
-                Today to next 7 days · {origin ? "near you" : "worldwide"}
+            <View style={styles.locationPill}>
+              <MapPin size={15} color={colors.primary500} />
+              <Text numberOfLines={1} style={styles.locationText}>
+                {origin ? "Near you" : "Worldwide"}
+              </Text>
+              <Text numberOfLines={1} style={styles.locationSubtext}>
+                · Today → +7 days
               </Text>
             </View>
             <Button
@@ -110,7 +110,7 @@ export default function MapScreen() {
 
         {!loading && !error ? (
           <View style={styles.summaryPill}>
-            <Text style={styles.summaryText}>{eventCountLabel} · today to 7 days</Text>
+            <Text style={styles.summaryText}>{eventCountLabel} this week</Text>
           </View>
         ) : null}
 
@@ -129,57 +129,18 @@ export default function MapScreen() {
             style={styles.eventRail}
           >
             {events.map((event) => (
-              <MapEventPreview key={event.id} event={event} />
+              <View key={event.id} style={styles.previewWrap}>
+                <EventCard
+                  event={event}
+                  compact
+                  onPress={() => router.push(`/event/${event.id}`)}
+                />
+              </View>
             ))}
           </ScrollView>
         ) : null}
       </View>
     </Screen>
-  );
-}
-
-function MapEventPreview({ event }: { event: EventWithMeta }) {
-  const remainingSpots = Math.max(event.max_participants - event.participant_count, 0);
-  const spotsLabel = remainingSpots === 0 ? "Full" : `${remainingSpots} spots`;
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={() => router.push(`/event/${event.id}`)}
-      style={({ pressed }) => [styles.previewCard, pressed && styles.previewPressed]}
-    >
-      <View style={styles.previewTop}>
-        <Text numberOfLines={1} style={styles.previewCategory}>
-          {categoryLabels[event.category]}
-        </Text>
-        <Text style={[styles.previewSpots, remainingSpots === 0 && styles.previewFull]}>
-          {spotsLabel}
-        </Text>
-      </View>
-      <Text numberOfLines={2} style={styles.previewTitle}>
-        {event.title}
-      </Text>
-      <View style={styles.previewMeta}>
-        <View style={styles.previewMetaRow}>
-          <CalendarDays size={15} color={colors.primaryDark} />
-          <Text numberOfLines={1} style={styles.previewMetaText}>
-            {formatEventDate(event.start_time)}
-          </Text>
-        </View>
-        <View style={styles.previewMetaRow}>
-          <MapPin size={15} color={colors.primaryDark} />
-          <Text numberOfLines={1} style={styles.previewMetaText}>
-            {event.location_name}
-          </Text>
-        </View>
-        <View style={styles.previewMetaRow}>
-          <Users size={15} color={colors.primaryDark} />
-          <Text numberOfLines={1} style={styles.previewMetaText}>
-            {event.participant_count}/{event.max_participants} joined · {priceLabels[event.price_type]}
-          </Text>
-        </View>
-      </View>
-    </Pressable>
   );
 }
 
@@ -203,45 +164,38 @@ const styles = StyleSheet.create({
     top: spacing.lg,
     left: spacing.lg,
     right: spacing.lg,
-    gap: spacing.md,
-    borderRadius: radii.lg,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 4
+    gap: spacing.md
   },
   topRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md
   },
-  topCopy: {
+  locationPill: {
     flex: 1,
-    gap: 2
+    minHeight: 44,
+    borderRadius: radii.pill,
+    backgroundColor: `${colors.white}EE`,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.ml,
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.xs,
+    ...shadows.soft
   },
-  eyebrow: {
-    color: colors.primary,
-    fontSize: typography.tiny,
-    fontWeight: "900"
-  },
-  mapTitle: {
+  locationText: {
+    ...textStyles.small,
+    fontFamily: fontFamilies.extraBold,
     color: colors.text,
-    fontSize: typography.heading,
-    fontWeight: "900",
-    letterSpacing: 0
   },
-  mapSubtitle: {
+  locationSubtext: {
+    ...textStyles.tiny,
     color: colors.textMuted,
-    fontSize: typography.small,
-    fontWeight: "800"
+    flexShrink: 1
   },
   hostButton: {
-    minHeight: 40,
+    minHeight: 44,
     paddingHorizontal: spacing.md
   },
   centerOverlay: {
@@ -257,46 +211,43 @@ const styles = StyleSheet.create({
   },
   summaryPill: {
     position: "absolute",
-    top: 178,
-    left: spacing.md,
+    top: 142,
+    left: spacing.lg,
     maxWidth: "76%",
     borderRadius: radii.pill,
-    backgroundColor: colors.surface,
+    backgroundColor: `${colors.white}EE`,
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3
+    ...shadows.soft
   },
   summaryText: {
+    ...textStyles.small,
+    fontFamily: fontFamilies.extraBold,
     color: colors.text,
-    fontSize: typography.small,
-    fontWeight: "900"
   },
   mapEmpty: {
     position: "absolute",
     left: spacing.lg,
     right: spacing.lg,
     bottom: spacing.lg,
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
+    backgroundColor: `${colors.surface}F2`,
+    borderRadius: radii.xl,
     borderWidth: 1,
     borderColor: colors.border,
     padding: spacing.lg,
-    gap: spacing.xs
+    gap: spacing.xs,
+    ...shadows.medium
   },
   mapEmptyTitle: {
+    ...textStyles.body,
+    fontFamily: fontFamilies.extraBold,
     color: colors.text,
-    fontSize: typography.body,
-    fontWeight: "900"
   },
   mapEmptyText: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontSize: typography.small
   },
   eventRail: {
     position: "absolute",
@@ -309,68 +260,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
     gap: spacing.md
   },
-  previewCard: {
-    width: 282,
-    minHeight: 172,
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-    gap: spacing.sm,
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 4
-  },
-  previewPressed: {
-    opacity: 0.9
-  },
-  previewTop: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: spacing.sm
-  },
-  previewCategory: {
-    flexShrink: 1,
-    color: colors.primaryDark,
-    backgroundColor: colors.primarySoft,
-    borderRadius: radii.pill,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    fontSize: typography.tiny,
-    fontWeight: "900",
-    overflow: "hidden"
-  },
-  previewSpots: {
-    color: colors.success,
-    fontSize: typography.tiny,
-    fontWeight: "900"
-  },
-  previewFull: {
-    color: colors.danger
-  },
-  previewTitle: {
-    color: colors.text,
-    fontSize: typography.body,
-    lineHeight: 21,
-    fontWeight: "900",
-    letterSpacing: 0
-  },
-  previewMeta: {
-    gap: spacing.xs
-  },
-  previewMetaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm
-  },
-  previewMetaText: {
-    flex: 1,
-    color: colors.textMuted,
-    fontSize: typography.small,
-    fontWeight: "700"
+  previewWrap: {
+    paddingVertical: spacing.xs
   }
 });

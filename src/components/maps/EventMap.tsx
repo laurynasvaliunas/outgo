@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Mapbox from "@rnmapbox/maps";
-import { categoryLabels } from "@/lib/categories";
+import { categoryMeta } from "@/lib/categories";
 import { GLOBAL_MAP_CENTER, type Coordinates } from "@/lib/distance";
 import { isMapboxConfigured, mapboxAccessToken } from "@/lib/mapbox";
-import { colors, radii, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, radii, shadows, spacing, textStyles } from "@/lib/theme";
 import type { EventWithMeta } from "@/types/domain";
 
 type EventMapProps = {
@@ -73,14 +73,18 @@ export function EventMap({
             accessibilityLabel={`Open ${event.title}`}
             onPress={() => onEventPress(event)}
             style={({ pressed }) => [
-              styles.marker,
+              styles.markerWrapper,
               pressed && styles.markerPressed
             ]}
           >
-            <Text numberOfLines={1} style={styles.markerLabel}>
-              {getMarkerLabel(event)}
-            </Text>
-            <View style={styles.markerStem} />
+            <View
+              style={[
+                styles.marker,
+                { borderColor: categoryMeta[event.category].color }
+              ]}
+            >
+              <Text style={styles.markerEmoji}>{categoryMeta[event.category].emoji}</Text>
+            </View>
           </Pressable>
         </Mapbox.MarkerView>
       ))}
@@ -107,11 +111,6 @@ function getEventCenter(events: EventWithMeta[]): Coordinates {
   };
 }
 
-function getMarkerLabel(event: EventWithMeta) {
-  const label = categoryLabels[event.category] ?? "Plan";
-  return label.length <= 12 ? label : label.split(" ")[0];
-}
-
 const styles = StyleSheet.create({
   map: {
     flex: 1
@@ -125,50 +124,37 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceMuted
   },
   unavailableTitle: {
+    ...textStyles.body,
+    fontFamily: fontFamilies.extraBold,
     color: colors.text,
-    fontSize: typography.body,
-    fontWeight: "900",
     textAlign: "center"
   },
   unavailableText: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontSize: typography.small,
     textAlign: "center",
-    lineHeight: 19
   },
-  marker: {
+  markerWrapper: {
     alignItems: "center",
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.18,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 4
+    ...shadows.pin
   },
   markerPressed: {
     opacity: 0.86
   },
-  markerLabel: {
-    maxWidth: 118,
-    overflow: "hidden",
-    borderRadius: radii.pill,
-    backgroundColor: colors.mapPin,
-    color: colors.surface,
+  marker: {
+    width: 38,
+    height: 38,
+    borderRadius: radii.xl,
+    borderBottomLeftRadius: radii.sm,
+    backgroundColor: colors.white,
     borderWidth: 2,
-    borderColor: colors.surface,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    fontSize: typography.tiny,
-    fontWeight: "900"
+    alignItems: "center",
+    justifyContent: "center",
+    transform: [{ rotate: "-45deg" }]
   },
-  markerStem: {
-    width: 10,
-    height: 10,
-    marginTop: -2,
-    borderRadius: 2,
-    backgroundColor: colors.mapPin,
-    borderRightWidth: 2,
-    borderBottomWidth: 2,
-    borderColor: colors.surface,
+  markerEmoji: {
+    fontSize: 15,
+    lineHeight: 18,
     transform: [{ rotate: "45deg" }]
   }
 });

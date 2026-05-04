@@ -15,18 +15,20 @@ type ScreenProps = {
   scroll?: boolean;
   centered?: boolean;
   contentStyle?: ViewStyle;
+  backgroundColor?: string;
 };
 
 export function Screen({
   children,
   scroll = true,
   centered = false,
-  contentStyle
+  contentStyle,
+  backgroundColor = colors.background
 }: ScreenProps) {
   const content = [styles.content, centered ? styles.centered : null, contentStyle];
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
       <KeyboardAvoidingView
         style={styles.keyboard}
         behavior={Platform.OS === "ios" ? "padding" : undefined}

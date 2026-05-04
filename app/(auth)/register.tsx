@@ -5,7 +5,7 @@ import { UserPlus } from "lucide-react-native";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Screen } from "@/components/ui/Screen";
-import { colors, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, spacing, textStyles } from "@/lib/theme";
 import { registerSchema } from "@/validation/auth";
 import { registerWithEmail } from "@/services/supabase/auth";
 import { track } from "@/lib/analytics";
@@ -117,15 +117,12 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   title: {
+    ...textStyles.title,
     color: colors.text,
-    fontSize: typography.title,
-    fontWeight: "900",
-    letterSpacing: 0
   },
   subtitle: {
+    ...textStyles.body,
     color: colors.textMuted,
-    fontSize: typography.body,
-    lineHeight: 23
   },
   form: {
     gap: spacing.md
@@ -140,14 +137,13 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   },
   legalText: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontSize: typography.small,
-    fontWeight: "700",
     textAlign: "center"
   },
   legalLink: {
-    color: colors.primaryDark,
-    fontSize: typography.small,
-    fontWeight: "900"
+    ...textStyles.small,
+    fontFamily: fontFamilies.bold,
+    color: colors.primary500
   }
 });

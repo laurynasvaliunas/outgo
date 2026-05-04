@@ -2,7 +2,7 @@ import { Redirect, Tabs } from "expo-router";
 import { CalendarCheck, ListFilter, Map, PlusCircle, User } from "lucide-react-native";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Screen } from "@/components/ui/Screen";
-import { colors } from "@/lib/theme";
+import { colors, fontFamilies, shadows } from "@/lib/theme";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function AppTabsLayout() {
@@ -24,16 +24,17 @@ export default function AppTabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primaryDark,
+        tabBarActiveTintColor: colors.primary500,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
           minHeight: 82,
-          paddingTop: 8
+          paddingTop: 8,
+          ...shadows.soft
         },
         tabBarLabelStyle: {
-          fontWeight: "900",
+          fontFamily: fontFamilies.extraBold,
           fontSize: 11
         }
       }}

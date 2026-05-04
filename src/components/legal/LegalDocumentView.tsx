@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { Screen } from "@/components/ui/Screen";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { legalCompany, type LegalDocument } from "@/lib/legal";
-import { colors, radii, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, radii, spacing, textStyles } from "@/lib/theme";
 
 type LegalDocumentViewProps = {
   document: LegalDocument;
@@ -73,24 +73,22 @@ const styles = StyleSheet.create({
     opacity: 0.82
   },
   backText: {
-    color: colors.primaryDark,
-    fontSize: typography.small,
-    fontWeight: "900"
+    ...textStyles.small,
+    fontFamily: fontFamilies.extraBold,
+    color: colors.primary500
   },
   companyCard: {
     gap: spacing.xs,
     backgroundColor: colors.primarySoft
   },
   companyTitle: {
-    color: colors.primaryDark,
-    fontSize: typography.small,
-    fontWeight: "900"
+    ...textStyles.small,
+    fontFamily: fontFamilies.extraBold,
+    color: colors.primary700
   },
   companyText: {
+    ...textStyles.small,
     color: colors.text,
-    fontSize: typography.small,
-    lineHeight: 19,
-    fontWeight: "700"
   },
   sections: {
     gap: spacing.md
@@ -99,14 +97,12 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   sectionTitle: {
+    ...textStyles.subheading,
+    fontFamily: fontFamilies.extraBold,
     color: colors.text,
-    fontSize: typography.subheading,
-    fontWeight: "900",
-    letterSpacing: 0
   },
   paragraph: {
+    ...textStyles.body,
     color: colors.text,
-    fontSize: typography.body,
-    lineHeight: 24
   }
 });

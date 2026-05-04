@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 import type { ReactNode } from "react";
-import { colors, radii, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, radii, spacing, textStyles } from "@/lib/theme";
 import { Button } from "./Button";
 
 type EmptyStateProps = {
@@ -32,28 +32,28 @@ export function EmptyState({
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingVertical: spacing.xxl,
+    paddingVertical: spacing.huge,
     gap: spacing.md,
     alignItems: "center"
   },
   icon: {
-    width: 58,
-    height: 58,
+    width: 64,
+    height: 64,
     borderRadius: radii.pill,
     backgroundColor: colors.primarySofter,
     alignItems: "center",
     justifyContent: "center"
   },
   title: {
-    fontSize: typography.subheading,
-    fontWeight: "800",
+    ...textStyles.subheading,
+    fontFamily: fontFamilies.bold,
     color: colors.text,
     textAlign: "center"
   },
   message: {
+    ...textStyles.body,
     color: colors.textMuted,
-    fontSize: typography.body,
     textAlign: "center",
-    lineHeight: 23
+    maxWidth: 280
   }
 });

@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, View } from "react-native";
-import { colors } from "@/lib/theme";
+import { colors, fontFamilies } from "@/lib/theme";
 
 type AvatarProps = {
   url?: string | null;
@@ -47,13 +47,13 @@ const styles = StyleSheet.create({
   fallback: {
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.primarySoft,
+    backgroundColor: colors.primary500,
     borderWidth: 1,
-    borderColor: colors.borderStrong
+    borderColor: colors.primary200
   },
   initials: {
-    color: colors.primaryDark,
-    fontWeight: "800",
+    color: colors.white,
+    fontFamily: fontFamilies.extraBold,
     letterSpacing: 0
   }
 });

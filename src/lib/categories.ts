@@ -1,3 +1,4 @@
+import { categoryColors, categoryEmojis } from "@/lib/theme";
 import type { EventCategory, PriceType } from "@/types/domain";
 
 export const categoryLabels: Record<EventCategory, string> = {
@@ -14,29 +15,43 @@ export const categoryLabels: Record<EventCategory, string> = {
   other: "Other"
 };
 
-export const categoryTone: Record<EventCategory, "green" | "blue" | "clay"> = {
-  coffee: "clay",
-  walk: "green",
-  study: "blue",
-  sport: "green",
-  board_games: "clay",
-  language_exchange: "blue",
-  food: "clay",
-  culture: "blue",
-  volunteering: "green",
-  no_phone: "green",
-  other: "blue"
+export const categoryTone: Record<EventCategory, "indigo" | "teal" | "amber" | "rose" | "neutral"> = {
+  coffee: "amber",
+  walk: "teal",
+  study: "indigo",
+  sport: "rose",
+  board_games: "indigo",
+  language_exchange: "teal",
+  food: "amber",
+  culture: "rose",
+  volunteering: "teal",
+  no_phone: "neutral",
+  other: "indigo"
 };
 
+export const categoryMeta: Record<EventCategory, { label: string; emoji: string; color: string }> =
+  Object.fromEntries(
+    Object.keys(categoryLabels).map((category) => [
+      category,
+      {
+        label: categoryLabels[category as EventCategory],
+        emoji: categoryEmojis[category as EventCategory],
+        color: categoryColors[category as EventCategory]
+      }
+    ])
+  ) as Record<EventCategory, { label: string; emoji: string; color: string }>;
+
 export const vibeOptions = [
+  "Chill",
+  "Active",
+  "Deep talk",
+  "Curious",
+  "Playful",
   "Quiet",
   "Beginner-friendly",
-  "Talkative",
   "No pressure",
-  "Focused",
   "Phone-light",
-  "Outdoor",
-  "Creative"
+  "Outdoor"
 ];
 
 export const priceLabels: Record<PriceType, string> = {

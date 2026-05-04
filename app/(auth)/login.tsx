@@ -5,7 +5,7 @@ import { Mail, Lock } from "lucide-react-native";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Screen } from "@/components/ui/Screen";
-import { colors, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, spacing, textStyles } from "@/lib/theme";
 import { loginSchema } from "@/validation/auth";
 import { signInWithEmail } from "@/services/supabase/auth";
 import { track } from "@/lib/analytics";
@@ -46,6 +46,7 @@ export default function LoginScreen() {
   return (
     <Screen centered>
       <View style={styles.header}>
+        <Text style={styles.emoji}>👋</Text>
         <Text style={styles.title}>Welcome back</Text>
         <Text style={styles.subtitle}>Your next quiet plan is waiting.</Text>
       </View>
@@ -98,15 +99,17 @@ const styles = StyleSheet.create({
   header: {
     gap: spacing.sm
   },
+  emoji: {
+    fontSize: 40,
+    lineHeight: 48
+  },
   title: {
+    ...textStyles.title,
     color: colors.text,
-    fontSize: typography.title,
-    fontWeight: "900",
-    letterSpacing: 0
   },
   subtitle: {
-    color: colors.textMuted,
-    fontSize: typography.body
+    ...textStyles.body,
+    color: colors.textMuted
   },
   form: {
     gap: spacing.md
@@ -118,13 +121,12 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   },
   legalText: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontSize: typography.small,
-    fontWeight: "700"
   },
   legalLink: {
-    color: colors.primaryDark,
-    fontSize: typography.small,
-    fontWeight: "900"
+    ...textStyles.small,
+    fontFamily: fontFamilies.bold,
+    color: colors.primary500
   }
 });

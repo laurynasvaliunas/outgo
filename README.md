@@ -170,6 +170,8 @@ EXPO_PUBLIC_REVENUECAT_MONTHLY_PRODUCT_ID=outgo_plus_monthly
 EXPO_PUBLIC_REVENUECAT_YEARLY_PRODUCT_ID=outgo_plus_yearly
 ```
 
+Use RevenueCat production public SDK keys for TestFlight and App Store builds. RevenueCat `test_...` keys are only for local/development testing; iOS release builds can show a "Wrong API Key" alert and close the app when a test key is used. OutGo ignores `test_...` keys in release builds so TestFlight stays usable, but purchases remain unavailable until a production key is configured and the app is rebuilt.
+
 Create one RevenueCat entitlement named `outgo_plus`, one offering named `default`, and attach two subscription packages:
 
 - Monthly product ID: `outgo_plus_monthly`, target price: EUR 3/month

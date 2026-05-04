@@ -8,9 +8,9 @@ import {
   type ViewStyle
 } from "react-native";
 import type { ReactNode } from "react";
-import { colors, radii, shadows, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, radii, shadows, spacing, textStyles } from "@/lib/theme";
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "amber" | "outline";
 
 type ButtonProps = PressableProps & {
   title: string;
@@ -30,14 +30,20 @@ export function Button({
   ...props
 }: ButtonProps) {
   const isDisabled = disabled || loading;
+  const filled = variant === "primary" || variant === "danger" || variant === "amber";
+  const indicatorColor = filled ? colors.white : colors.primary500;
   const textStyle =
     variant === "primary"
       ? styles.primaryText
       : variant === "secondary"
         ? styles.secondaryText
-        : variant === "danger"
-          ? styles.dangerText
-          : styles.ghostText;
+        : variant === "outline"
+          ? styles.outlineText
+          : variant === "danger"
+            ? styles.dangerText
+            : variant === "amber"
+              ? styles.amberText
+              : styles.ghostText;
 
   return (
     <Pressable
@@ -53,9 +59,7 @@ export function Button({
       {...props}
     >
       {loading ? (
-        <ActivityIndicator
-          color={variant === "primary" || variant === "danger" ? "#FFFFFF" : colors.primary}
-        />
+        <ActivityIndicator color={indicatorColor} />
       ) : (
         <>
           {icon}
@@ -83,12 +87,18 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   primary: {
-    backgroundColor: colors.primaryDark,
-    ...shadows.soft
+    backgroundColor: colors.primary500,
+    ...shadows.pin
   },
   secondary: {
     backgroundColor: colors.surface,
     borderWidth: 1,
+    borderColor: colors.border,
+    ...shadows.soft
+  },
+  outline: {
+    backgroundColor: "transparent",
+    borderWidth: 1.5,
     borderColor: colors.borderStrong
   },
   ghost: {
@@ -98,28 +108,37 @@ const styles = StyleSheet.create({
     backgroundColor: colors.danger,
     ...shadows.soft
   },
+  amber: {
+    backgroundColor: colors.amber500,
+    ...shadows.soft
+  },
   disabled: {
     opacity: 0.55
   },
   pressed: {
-    opacity: 0.86,
+    opacity: 0.88,
     transform: [{ scale: 0.99 }]
   },
   text: {
-    fontSize: typography.small,
-    fontWeight: "900",
-    letterSpacing: 0
+    ...textStyles.small,
+    fontFamily: fontFamilies.extraBold
   },
   primaryText: {
-    color: "#FFFFFF"
+    color: colors.white
   },
   secondaryText: {
-    color: colors.primaryDark
+    color: colors.primary700
+  },
+  outlineText: {
+    color: colors.primary700
   },
   ghostText: {
-    color: colors.primaryDark
+    color: colors.primary500
   },
   dangerText: {
-    color: "#FFFFFF"
+    color: colors.white
+  },
+  amberText: {
+    color: colors.white
   }
 });

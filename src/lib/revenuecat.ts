@@ -13,6 +13,7 @@ const DEFAULT_ENTITLEMENT_ID = "outgo_plus";
 const DEFAULT_OFFERING_ID = "default";
 const DEFAULT_MONTHLY_PRODUCT_ID = "outgo_plus_monthly";
 const DEFAULT_YEARLY_PRODUCT_ID = "outgo_plus_yearly";
+const TEST_API_KEY_PREFIX = "test_";
 
 const revenueCatApiKey = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY;
 const revenueCatIosApiKey =
@@ -35,15 +36,51 @@ export const revenueCatYearlyProductId =
 let configured = false;
 let configuredAppUserId: string | null = null;
 let warnedMissingKey = false;
+let warnedTestKeyInRelease = false;
 
-export function getRevenueCatApiKey() {
+function normalizeApiKey(apiKey?: string | null) {
+  const trimmedApiKey = apiKey?.trim();
+  return trimmedApiKey ? trimmedApiKey : null;
+}
+
+function getRawRevenueCatApiKey() {
   if (Platform.OS === "ios") {
-    return revenueCatIosApiKey;
+    return normalizeApiKey(revenueCatIosApiKey);
   }
   if (Platform.OS === "android") {
-    return revenueCatAndroidApiKey;
+    return normalizeApiKey(revenueCatAndroidApiKey);
   }
   return null;
+}
+
+function isTestRevenueCatApiKey(apiKey: string | null) {
+  return apiKey?.startsWith(TEST_API_KEY_PREFIX) ?? false;
+}
+
+export function getRevenueCatUnavailableMessage() {
+  if (Platform.OS === "web") {
+    return "RevenueCat purchases are available in native iOS and Android builds.";
+  }
+
+  const rawApiKey = getRawRevenueCatApiKey();
+  if (!rawApiKey) {
+    return "Add the RevenueCat public SDK key and run an EAS development or TestFlight build to test subscriptions.";
+  }
+
+  if (!__DEV__ && isTestRevenueCatApiKey(rawApiKey)) {
+    return "This build has a RevenueCat test API key. Add the production iOS public SDK key in RevenueCat and rebuild for TestFlight.";
+  }
+
+  return null;
+}
+
+export function getRevenueCatApiKey() {
+  const rawApiKey = getRawRevenueCatApiKey();
+  if (!rawApiKey || (!__DEV__ && isTestRevenueCatApiKey(rawApiKey))) {
+    return null;
+  }
+
+  return rawApiKey;
 }
 
 export function isRevenueCatAvailable() {
@@ -57,7 +94,18 @@ export function configureRevenueCat(appUserId?: string | null) {
 
   const apiKey = getRevenueCatApiKey();
   if (!apiKey) {
-    if (__DEV__ && !warnedMissingKey) {
+    const rawApiKey = getRawRevenueCatApiKey();
+    if (!__DEV__ && isTestRevenueCatApiKey(rawApiKey)) {
+      if (!warnedTestKeyInRelease) {
+        console.warn(
+          "Ignoring RevenueCat test API key in a release build. Add the production public SDK key before testing purchases in TestFlight."
+        );
+        warnedTestKeyInRelease = true;
+      }
+      return false;
+    }
+
+    if (!warnedMissingKey) {
       console.warn(
         "Missing RevenueCat API key. Add EXPO_PUBLIC_REVENUECAT_IOS_API_KEY and/or EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY."
       );

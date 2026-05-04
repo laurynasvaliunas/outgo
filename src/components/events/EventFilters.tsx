@@ -3,7 +3,7 @@ import { EVENT_CATEGORIES, type EventCategory, type EventFilters as Filters, typ
 import { CategoryPill } from "./CategoryPill";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { colors, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, spacing, textStyles } from "@/lib/theme";
 
 type EventFiltersProps = {
   filters: Filters;
@@ -49,6 +49,7 @@ export function EventFilters({ filters, onChange, compact }: EventFiltersProps) 
             category={category}
             selected={filters.category === category}
             onPress={() => setCategory(category)}
+            compact={compact}
           />
         ))}
       </ScrollView>
@@ -128,7 +129,7 @@ export function EventFilters({ filters, onChange, compact }: EventFiltersProps) 
 
 const styles = StyleSheet.create({
   wrapper: {
-    gap: spacing.md
+    gap: spacing.lg
   },
   row: {
     gap: spacing.sm,
@@ -143,9 +144,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   label: {
+    ...textStyles.small,
+    fontFamily: fontFamilies.bold,
     color: colors.text,
-    fontSize: typography.small,
-    fontWeight: "800"
   },
   inline: {
     flexDirection: "row",

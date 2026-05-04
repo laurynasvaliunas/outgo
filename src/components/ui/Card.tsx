@@ -12,7 +12,7 @@ export function Card({ style, padded = true, ...props }: CardProps) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
     borderColor: colors.border,
     ...shadows.soft

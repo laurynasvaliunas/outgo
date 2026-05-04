@@ -28,7 +28,7 @@ const config: OutGoExpoConfig = {
     versionCode: 1,
     adaptiveIcon: {
       foregroundImage: "./assets/images/adaptive-icon.png",
-      backgroundColor: "#F8F4EE"
+      backgroundColor: "#F7F6F2"
     }
   },
   web: {
@@ -36,10 +36,11 @@ const config: OutGoExpoConfig = {
   },
   plugins: [
     "expo-router",
+    "expo-font",
     [
       "expo-splash-screen",
       {
-        backgroundColor: "#F8F4EE",
+        backgroundColor: "#F7F6F2",
         image: "./assets/images/splash-icon.png",
         imageWidth: 160
       }

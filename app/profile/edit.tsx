@@ -11,7 +11,7 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { uploadAvatar } from "@/services/supabase/storage";
 import { profileSchema } from "@/validation/profile";
-import { colors, spacing, typography } from "@/lib/theme";
+import { colors, spacing, textStyles } from "@/lib/theme";
 import { track } from "@/lib/analytics";
 
 export default function EditProfileScreen() {
@@ -191,8 +191,7 @@ const styles = StyleSheet.create({
     minWidth: 108
   },
   note: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontSize: typography.small,
-    lineHeight: 19
   }
 });

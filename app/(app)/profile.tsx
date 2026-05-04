@@ -9,7 +9,7 @@ import { Screen } from "@/components/ui/Screen";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { signOut } from "@/services/supabase/auth";
-import { colors, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, spacing, textStyles } from "@/lib/theme";
 
 export default function ProfileScreen() {
   const { profile } = useAuth();
@@ -105,25 +105,22 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   },
   name: {
+    ...textStyles.heading,
+    fontFamily: fontFamilies.extraBold,
     color: colors.text,
-    fontSize: typography.heading,
-    fontWeight: "900",
-    letterSpacing: 0
   },
   username: {
-    color: colors.primaryDark,
-    fontWeight: "800",
-    fontSize: typography.body
+    ...textStyles.body,
+    fontFamily: fontFamilies.bold,
+    color: colors.primary500
   },
   city: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontSize: typography.small,
-    fontWeight: "700"
   },
   bio: {
+    ...textStyles.body,
     color: colors.text,
-    fontSize: typography.body,
-    lineHeight: 23,
     textAlign: "center"
   },
   interests: {
@@ -133,13 +130,13 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   interest: {
+    ...textStyles.small,
+    fontFamily: fontFamilies.bold,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: 999,
-    backgroundColor: colors.blueSoft,
+    backgroundColor: colors.infoSoft,
     color: colors.text,
-    fontSize: typography.small,
-    fontWeight: "800"
   },
   safety: {
     flexDirection: "row",
@@ -150,13 +147,12 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   },
   safetyTitle: {
+    ...textStyles.body,
+    fontFamily: fontFamilies.extraBold,
     color: colors.text,
-    fontSize: typography.body,
-    fontWeight: "900"
   },
   safetyText: {
+    ...textStyles.small,
     color: colors.textMuted,
-    fontSize: typography.small,
-    lineHeight: 19
   }
 });

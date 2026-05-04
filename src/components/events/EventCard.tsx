@@ -1,82 +1,110 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { CalendarDays, MapPin, ShieldCheck, Users } from "lucide-react-native";
-import { Card } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
-import { CategoryPill } from "./CategoryPill";
+import { Card } from "@/components/ui/Card";
+import { categoryMeta, priceLabels } from "@/lib/categories";
 import { formatEventDate } from "@/lib/date";
-import { priceLabels } from "@/lib/categories";
-import { colors, spacing, typography } from "@/lib/theme";
+import {
+  colors,
+  fontFamilies,
+  radii,
+  shadows,
+  spacing,
+  textStyles
+} from "@/lib/theme";
 import type { EventWithMeta } from "@/types/domain";
 
 type EventCardProps = {
   event: EventWithMeta;
   onPress?: () => void;
+  compact?: boolean;
 };
 
-export function EventCard({ event, onPress }: EventCardProps) {
+export function EventCard({ event, onPress, compact }: EventCardProps) {
   const isFull = event.participant_count >= event.max_participants;
+  const meta = categoryMeta[event.category];
+  const priceLabel = event.price_amount
+    ? `€${event.price_amount}`
+    : priceLabels[event.price_type];
+
   return (
     <Pressable accessibilityRole="button" onPress={onPress}>
       {({ pressed }) => (
-        <Card style={[styles.card, pressed && styles.pressed]}>
-          <View style={styles.top}>
-            <CategoryPill category={event.category} />
-            <Text style={[styles.status, isFull && styles.full]}>
-              {isFull ? "Full" : `${event.max_participants - event.participant_count} spots`}
-            </Text>
-          </View>
-
-          <View style={styles.copy}>
-            <Text style={styles.title}>{event.title}</Text>
-            <Text numberOfLines={2} style={styles.description}>
-              {event.description}
-            </Text>
-          </View>
-
-          <View style={styles.vibeRow}>
-            <Text numberOfLines={1} style={styles.vibe}>
-              {event.vibe}
-            </Text>
-            <View style={styles.safetyPill}>
-              <ShieldCheck size={13} color={colors.success} />
-              <Text style={styles.safetyText}>Public place</Text>
+        <Card padded={false} style={[styles.card, compact && styles.compactCard, pressed && styles.pressed]}>
+          <View style={[styles.hero, compact && styles.compactHero, { backgroundColor: `${meta.color}1F` }]}>
+            <Text style={[styles.heroEmoji, compact && styles.compactHeroEmoji]}>{meta.emoji}</Text>
+            <View style={[styles.categoryBadge, { backgroundColor: meta.color }]}>
+              <Text numberOfLines={1} style={styles.badgeText}>{meta.label}</Text>
+            </View>
+            <View
+              style={[
+                styles.priceBadge,
+                { backgroundColor: event.price_type === "free" ? colors.success : colors.amber500 }
+              ]}
+            >
+              <Text numberOfLines={1} style={styles.badgeText}>{priceLabel}</Text>
             </View>
           </View>
 
-          <View style={styles.meta}>
-            <View style={styles.metaRow}>
-              <CalendarDays size={16} color={colors.primaryDark} />
-              <Text style={styles.metaText}>{formatEventDate(event.start_time)}</Text>
+          <View style={[styles.body, compact && styles.compactBody]}>
+            <Text numberOfLines={compact ? 2 : 1} style={[styles.title, compact && styles.compactTitle]}>
+              {event.title}
+            </Text>
+            {!compact ? (
+              <Text numberOfLines={2} style={styles.description}>
+                {event.description}
+              </Text>
+            ) : null}
+
+            <View style={styles.vibeRow}>
+              <Text numberOfLines={1} style={styles.vibe}>
+                {event.vibe}
+              </Text>
+              {!compact ? (
+                <View style={styles.safetyPill}>
+                  <ShieldCheck size={13} color={colors.success} />
+                  <Text style={styles.safetyText}>Public place</Text>
+                </View>
+              ) : null}
             </View>
-            <View style={styles.metaRow}>
-              <MapPin size={16} color={colors.primaryDark} />
-              <Text numberOfLines={1} style={styles.metaText}>
-                {event.location_name}
+
+            <View style={styles.meta}>
+              <View style={styles.metaRow}>
+                <CalendarDays size={15} color={colors.primary500} />
+                <Text numberOfLines={1} style={styles.metaText}>
+                  {formatEventDate(event.start_time)}
+                </Text>
+              </View>
+              <View style={styles.metaRow}>
+                <MapPin size={15} color={colors.primary500} />
+                <Text numberOfLines={1} style={styles.metaText}>
+                  {event.location_name}
+                </Text>
+              </View>
+              <View style={styles.metaRow}>
+                <Users size={15} color={colors.primary500} />
+                <Text numberOfLines={1} style={styles.metaText}>
+                  {event.participant_count}/{event.max_participants} joined
+                  {isFull ? " · Full" : ""}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.footer}>
+              <View style={styles.host}>
+                <Avatar
+                  size={compact ? 22 : 30}
+                  name={event.host?.full_name ?? event.host?.username ?? "Host"}
+                  url={event.host?.avatar_url}
+                />
+                <Text numberOfLines={1} style={styles.hostText}>
+                  {event.host?.full_name || event.host?.username || "Local host"}
+                </Text>
+              </View>
+              <Text style={[styles.spots, isFull && styles.full]}>
+                {isFull ? "Full" : `${event.max_participants - event.participant_count} spots`}
               </Text>
             </View>
-            <View style={styles.metaRow}>
-              <Users size={16} color={colors.primaryDark} />
-              <Text style={styles.metaText}>
-                {event.participant_count}/{event.max_participants} joined
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.footer}>
-            <View style={styles.host}>
-              <Avatar
-                size={30}
-                name={event.host?.full_name ?? event.host?.username ?? "Host"}
-                url={event.host?.avatar_url}
-              />
-              <Text numberOfLines={1} style={styles.hostText}>
-                {event.host?.full_name || event.host?.username || "Local host"}
-              </Text>
-            </View>
-            <Text style={styles.price}>
-              {priceLabels[event.price_type]}
-              {event.price_amount ? ` · €${event.price_amount}` : ""}
-            </Text>
           </View>
         </Card>
       )}
@@ -86,22 +114,78 @@ export function EventCard({ event, onPress }: EventCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    gap: spacing.md,
-    borderColor: colors.border
+    overflow: "hidden",
+    borderColor: colors.border,
+    ...shadows.soft
+  },
+  compactCard: {
+    width: 232
   },
   pressed: {
-    opacity: 0.9
+    opacity: 0.9,
+    transform: [{ scale: 0.995 }]
   },
-  top: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  hero: {
+    minHeight: 128,
     alignItems: "center",
+    justifyContent: "center",
+    position: "relative"
+  },
+  compactHero: {
+    minHeight: 92
+  },
+  heroEmoji: {
+    fontSize: 48,
+    lineHeight: 58
+  },
+  compactHeroEmoji: {
+    fontSize: 36,
+    lineHeight: 44
+  },
+  categoryBadge: {
+    position: "absolute",
+    top: spacing.md,
+    left: spacing.md,
+    maxWidth: 140,
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs
+  },
+  priceBadge: {
+    position: "absolute",
+    top: spacing.md,
+    right: spacing.md,
+    maxWidth: 82,
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs
+  },
+  badgeText: {
+    ...textStyles.tiny,
+    fontFamily: fontFamilies.extraBold,
+    color: colors.white
+  },
+  body: {
+    padding: spacing.lg,
     gap: spacing.md
   },
-  status: {
-    color: colors.success,
-    fontSize: typography.small,
-    fontWeight: "800"
+  compactBody: {
+    padding: spacing.md,
+    gap: spacing.sm
+  },
+  title: {
+    ...textStyles.md,
+    fontFamily: fontFamilies.extraBold,
+    color: colors.text
+  },
+  compactTitle: {
+    ...textStyles.small,
+    fontFamily: fontFamilies.extraBold,
+    color: colors.text
+  },
+  description: {
+    ...textStyles.body,
+    color: colors.textMuted
   },
   vibeRow: {
     flexDirection: "row",
@@ -110,46 +194,27 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   vibe: {
-    flexShrink: 1,
-    color: colors.lavender,
-    backgroundColor: colors.lavenderSoft,
-    borderRadius: 999,
+    ...textStyles.tiny,
+    fontFamily: fontFamilies.extraBold,
+    color: colors.primary500,
+    backgroundColor: colors.primary50,
+    borderRadius: radii.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
-    fontSize: typography.tiny,
-    fontWeight: "900",
     overflow: "hidden"
   },
   safetyPill: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.xs,
-    borderRadius: 999,
+    borderRadius: radii.pill,
     backgroundColor: colors.successSoft,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs
   },
   safetyText: {
-    color: colors.success,
-    fontSize: typography.tiny,
-    fontWeight: "900"
-  },
-  full: {
-    color: colors.danger
-  },
-  copy: {
-    gap: spacing.xs
-  },
-  title: {
-    color: colors.text,
-    fontSize: typography.subheading,
-    fontWeight: "900",
-    letterSpacing: 0
-  },
-  description: {
-    color: colors.textMuted,
-    fontSize: typography.body,
-    lineHeight: 22
+    ...textStyles.tiny,
+    color: colors.success
   },
   meta: {
     gap: spacing.sm
@@ -160,13 +225,12 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   metaText: {
+    ...textStyles.small,
     flex: 1,
-    color: colors.textMuted,
-    fontSize: typography.small,
-    fontWeight: "800"
+    color: colors.textMuted
   },
   footer: {
-    paddingTop: spacing.md,
+    paddingTop: spacing.sm,
     borderTopWidth: 1,
     borderTopColor: colors.border,
     flexDirection: "row",
@@ -181,14 +245,16 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   hostText: {
+    ...textStyles.small,
     flex: 1,
-    color: colors.textMuted,
-    fontSize: typography.small,
-    fontWeight: "700"
+    color: colors.textMuted
   },
-  price: {
-    color: colors.primaryDark,
-    fontWeight: "900",
-    fontSize: typography.small
+  spots: {
+    ...textStyles.tiny,
+    fontFamily: fontFamilies.extraBold,
+    color: colors.success
+  },
+  full: {
+    color: colors.danger
   }
 });

@@ -13,7 +13,7 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useEvent } from "@/hooks/useEvents";
 import { useEventMessages } from "@/hooks/useEventMessages";
-import { colors, spacing, typography } from "@/lib/theme";
+import { colors, fontFamilies, radii, spacing, textStyles } from "@/lib/theme";
 
 export default function EventChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
-    backgroundColor: colors.primarySofter,
+    backgroundColor: colors.primary50,
     padding: spacing.md
   },
   noticeCopy: {
@@ -170,15 +170,13 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   },
   noticeTitle: {
+    ...textStyles.small,
+    fontFamily: fontFamilies.extraBold,
     color: colors.text,
-    fontSize: typography.small,
-    fontWeight: "900"
   },
   noticeText: {
+    ...textStyles.tiny,
     color: colors.textMuted,
-    fontSize: typography.tiny,
-    lineHeight: 16,
-    fontWeight: "700"
   },
   reportButton: {
     minHeight: 36,
@@ -198,20 +196,19 @@ const styles = StyleSheet.create({
     padding: spacing.md
   },
   messageMine: {
-    backgroundColor: colors.primaryDark
+    backgroundColor: colors.primary500,
+    borderColor: colors.primary500
   },
   sender: {
+    ...textStyles.tiny,
     color: colors.textMuted,
-    fontSize: typography.tiny,
-    fontWeight: "800"
   },
   senderMine: {
     color: colors.primarySoft
   },
   messageText: {
+    ...textStyles.body,
     color: colors.text,
-    fontSize: typography.body,
-    lineHeight: 22
   },
   messageTextMine: {
     color: colors.surface
@@ -220,14 +217,18 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
     paddingTop: spacing.md,
+    paddingBottom: spacing.md,
     flexDirection: "row",
     alignItems: "flex-end",
-    gap: spacing.sm
+    gap: spacing.sm,
+    backgroundColor: colors.background
   },
   composerInput: {
     flex: 1
   },
   sendButton: {
-    minWidth: 96
+    minWidth: 54,
+    minHeight: 54,
+    borderRadius: radii.pill
   }
 });
