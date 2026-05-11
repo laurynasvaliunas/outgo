@@ -72,7 +72,7 @@ export function useEvents(filters: EventFilters = EMPTY_EVENT_FILTERS) {
     void refresh();
   }, [refresh]);
 
-  return { events, loading, error, refresh };
+  return { events, loading, error, refresh, origin };
 }
 
 export function useEvent(eventId?: string) {

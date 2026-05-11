@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { colors, radii, shadows, spacing, textStyles } from "@/lib/theme";
+import { radii, spacing, textStyles } from "@/lib/theme";
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 type Option<T extends string> = {
   label: string;
@@ -17,8 +18,15 @@ export function SegmentedControl<T extends string>({
   value,
   onChange
 }: SegmentedControlProps<T>) {
+  const { colors, shadows } = useAppTheme();
+
   return (
-    <View style={styles.wrapper}>
+    <View
+      style={[
+        styles.wrapper,
+        { backgroundColor: colors.surfaceMuted, borderColor: colors.border }
+      ]}
+    >
       {options.map((option) => {
         const selected = option.value === value;
         return (
@@ -26,12 +34,23 @@ export function SegmentedControl<T extends string>({
             accessibilityRole="button"
             key={option.value}
             onPress={() => onChange(option.value)}
-            style={[styles.option, selected && styles.selected]}
+            style={[
+              styles.option,
+              selected && {
+                backgroundColor: colors.surface,
+                borderWidth: 1,
+                borderColor: colors.border,
+                ...shadows.soft
+              }
+            ]}
           >
             <Text
               numberOfLines={1}
               adjustsFontSizeToFit
-              style={[styles.label, selected && styles.selectedLabel]}
+              style={[
+                styles.label,
+                { color: selected ? colors.text : colors.textMuted }
+              ]}
             >
               {option.label}
             </Text>
@@ -46,12 +65,10 @@ const styles = StyleSheet.create({
   wrapper: {
     minHeight: 48,
     padding: spacing.xs,
-    backgroundColor: colors.surfaceMuted,
     borderRadius: radii.pill,
     flexDirection: "row",
     gap: spacing.xs,
-    borderWidth: 1,
-    borderColor: colors.border
+    borderWidth: 1
   },
   option: {
     flex: 1,
@@ -61,16 +78,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm
   },
   selected: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    ...shadows.soft
   },
   label: {
-    ...textStyles.small,
-    color: colors.textMuted,
+    ...textStyles.small
   },
-  selectedLabel: {
-    color: colors.text
-  }
+  selectedLabel: {}
 });

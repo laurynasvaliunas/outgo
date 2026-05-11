@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { categoryMeta } from "@/lib/categories";
-import { colors, fontFamilies, radii, spacing, textStyles } from "@/lib/theme";
+import { fontFamilies, radii, spacing, textStyles } from "@/lib/theme";
+import { useThemeColors } from "@/hooks/useAppTheme";
 import type { EventCategory } from "@/types/domain";
 
 type CategoryPillProps = {
@@ -16,6 +17,7 @@ export function CategoryPill({
   onPress,
   compact
 }: CategoryPillProps) {
+  const colors = useThemeColors();
   const meta = categoryMeta[category];
   const activeColor = meta.color;
 
@@ -33,12 +35,17 @@ export function CategoryPill({
         }
       ]}
     >
-      <View style={[styles.emojiBubble, selected && styles.selectedEmoji]}>
+      <View
+        style={[
+          styles.emojiBubble,
+          { backgroundColor: selected ? `${colors.white}EE` : colors.surface }
+        ]}
+      >
         <Text style={styles.emoji}>{meta.emoji}</Text>
       </View>
       <Text
         numberOfLines={1}
-        style={[styles.label, selected && styles.selectedLabel]}
+        style={[styles.label, { color: selected ? colors.white : colors.text }]}
       >
         {meta.label}
       </Text>
@@ -66,23 +73,17 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: colors.surface,
     alignItems: "center",
     justifyContent: "center"
   },
-  selectedEmoji: {
-    backgroundColor: `${colors.white}EE`
-  },
+  selectedEmoji: {},
   emoji: {
     fontSize: 12,
     lineHeight: 16
   },
   label: {
     ...textStyles.small,
-    fontFamily: fontFamilies.bold,
-    color: colors.text
+    fontFamily: fontFamilies.bold
   },
-  selectedLabel: {
-    color: colors.white
-  }
+  selectedLabel: {}
 });

@@ -43,6 +43,13 @@ function dateRangeForFilter(filter: EventFilters["date"]) {
   if (filter === "week") {
     return [startOfDay(now), endOfDay(addDays(now, 7))] as const;
   }
+  if (filter === "weekend") {
+    const day = now.getDay();
+    const daysUntilSaturday = day === 6 ? 0 : day === 0 ? -1 : 6 - day;
+    const saturday = addDays(now, daysUntilSaturday);
+    const sunday = addDays(saturday, 1);
+    return [startOfDay(saturday), endOfDay(sunday)] as const;
+  }
   return null;
 }
 
@@ -67,17 +74,14 @@ async function enrichEvents(
   }
 
   const eventIds = events.map((event) => event.id);
-  const hostIds = [...new Set(events.map((event) => event.host_id))];
-
-  const [profilesResult, participantsResult, favoritesResult] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("id, full_name, username, avatar_url, city")
-      .in("id", hostIds),
+  const [participantsResult, participantCountsResult, favoritesResult] = await Promise.all([
     supabase
       .from("event_participants")
       .select("event_id, user_id")
       .in("event_id", eventIds),
+    supabase.rpc("get_event_participant_counts", {
+      target_event_ids: eventIds
+    }),
     currentUserId
       ? supabase
           .from("event_favorites")
@@ -87,14 +91,37 @@ async function enrichEvents(
       : Promise.resolve({ data: [], error: null })
   ]);
 
-  if (profilesResult.error) {
-    throw profilesResult.error;
-  }
   if (participantsResult.error) {
     throw participantsResult.error;
   }
+  if (participantCountsResult.error) {
+    throw participantCountsResult.error;
+  }
   if (favoritesResult.error) {
     throw favoritesResult.error;
+  }
+
+  const participantRows = participantsResult.data ?? [];
+  const participantCounts = new Map(
+    (participantCountsResult.data ?? []).map((row) => [
+      row.event_id,
+      row.participant_count
+    ])
+  );
+  const profileIds = [
+    ...new Set([
+      ...events.map((event) => event.host_id),
+      ...participantRows.map((row) => row.user_id)
+    ])
+  ];
+
+  const profilesResult = await supabase
+    .from("profiles")
+    .select("id, full_name, username, avatar_url, city")
+    .in("id", profileIds);
+
+  if (profilesResult.error) {
+    throw profilesResult.error;
   }
 
   const profiles = new Map(
@@ -103,14 +130,25 @@ async function enrichEvents(
   const favoriteIds = new Set(
     (favoritesResult.data ?? []).map((favorite) => favorite.event_id)
   );
-  const participantRows = participantsResult.data ?? [];
 
   return events.map((event) => {
     const rows = participantRows.filter((row) => row.event_id === event.id);
+    const participants = rows
+      .map((row) => profiles.get(row.user_id))
+      .filter((profile): profile is NonNullable<typeof profile> => Boolean(profile))
+      .map((profile) => ({
+        id: profile.id,
+        full_name: profile.full_name,
+        username: profile.username,
+        avatar_url: profile.avatar_url
+      }))
+      .slice(0, 6);
+
     return {
       ...event,
       host: profiles.get(event.host_id) ?? null,
-      participant_count: rows.length,
+      participants,
+      participant_count: participantCounts.get(event.id) ?? rows.length,
       is_joined: currentUserId
         ? rows.some((row) => row.user_id === currentUserId)
         : false,

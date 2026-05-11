@@ -4,13 +4,16 @@ import Mapbox from "@rnmapbox/maps";
 import { categoryMeta } from "@/lib/categories";
 import { GLOBAL_MAP_CENTER, type Coordinates } from "@/lib/distance";
 import { isMapboxConfigured, mapboxAccessToken } from "@/lib/mapbox";
-import { colors, fontFamilies, radii, shadows, spacing, textStyles } from "@/lib/theme";
+import { useAppTheme } from "@/hooks/useAppTheme";
+import { fontFamilies, radii, spacing, textStyles } from "@/lib/theme";
 import type { EventWithMeta } from "@/types/domain";
 
 type EventMapProps = {
   events: EventWithMeta[];
   center: Coordinates;
   hasDeviceOrigin: boolean;
+  compassTopInset?: number;
+  selectedEventId?: string | null;
   onEventPress: (event: EventWithMeta) => void;
 };
 
@@ -25,8 +28,12 @@ export function EventMap({
   events,
   center,
   hasDeviceOrigin,
+  compassTopInset = 148,
+  selectedEventId,
   onEventPress
 }: EventMapProps) {
+  const { colors, shadows } = useAppTheme();
+
   useEffect(() => {
     if (isMapboxConfigured) {
       void Mapbox.setAccessToken(mapboxAccessToken);
@@ -35,9 +42,9 @@ export function EventMap({
 
   if (!isMapboxConfigured) {
     return (
-      <View style={styles.unavailable}>
-        <Text style={styles.unavailableTitle}>Mapbox token missing</Text>
-        <Text style={styles.unavailableText}>
+      <View style={[styles.unavailable, { backgroundColor: colors.surfaceMuted }]}>
+        <Text style={[styles.unavailableTitle, { color: colors.text }]}>Mapbox token missing</Text>
+        <Text style={[styles.unavailableText, { color: colors.textMuted }]}>
           Add EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN to local and EAS environments.
         </Text>
       </View>
@@ -51,6 +58,7 @@ export function EventMap({
       style={styles.map}
       styleURL={Mapbox.StyleURL.Outdoors}
       compassEnabled
+      compassPosition={{ top: compassTopInset, right: spacing.lg }}
       logoEnabled
       attributionEnabled
       scaleBarEnabled={false}
@@ -61,33 +69,49 @@ export function EventMap({
         zoomLevel={hasDeviceOrigin ? NEARBY_ZOOM : FALLBACK_WORLD_ZOOM}
       />
       {hasDeviceOrigin ? <Mapbox.LocationPuck visible pulsing={{ isEnabled: true }} /> : null}
-      {events.map((event) => (
-        <Mapbox.MarkerView
-          key={event.id}
-          coordinate={[event.longitude, event.latitude]}
-          anchor={{ x: 0.5, y: 1 }}
-          allowOverlap
-        >
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`Open ${event.title}`}
-            onPress={() => onEventPress(event)}
-            style={({ pressed }) => [
-              styles.markerWrapper,
-              pressed && styles.markerPressed
-            ]}
+      {events.map((event) => {
+        const selected = selectedEventId === event.id;
+
+        return (
+          <Mapbox.MarkerView
+            key={event.id}
+            coordinate={[event.longitude, event.latitude]}
+            anchor={{ x: 0.5, y: 1 }}
+            allowOverlap
           >
-            <View
-              style={[
-                styles.marker,
-                { borderColor: categoryMeta[event.category].color }
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Select ${event.title}`}
+              accessibilityHint="Shows this plan in the map sheet."
+              onPress={() => onEventPress(event)}
+              style={({ pressed }) => [
+                styles.markerWrapper,
+                selected && styles.markerWrapperSelected,
+                shadows.pin,
+                pressed && styles.markerPressed
               ]}
             >
-              <Text style={styles.markerEmoji}>{categoryMeta[event.category].emoji}</Text>
-            </View>
-          </Pressable>
-        </Mapbox.MarkerView>
-      ))}
+              <View
+                style={[
+                  styles.marker,
+                  {
+                    backgroundColor: categoryMeta[event.category].color,
+                    borderColor: selected ? colors.white : categoryMeta[event.category].color
+                  },
+                  selected && styles.markerSelected
+                ]}
+              >
+                <View style={[styles.markerInner, { backgroundColor: `${colors.white}EA` }]}>
+                  <Text style={styles.markerEmoji}>{categoryMeta[event.category].emoji}</Text>
+                </View>
+              </View>
+              {selected ? (
+                <View style={[styles.markerPulse, { backgroundColor: categoryMeta[event.category].color }]} />
+              ) : null}
+            </Pressable>
+          </Mapbox.MarkerView>
+        );
+      })}
     </Mapbox.MapView>
   );
 }
@@ -120,37 +144,55 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.sm,
-    padding: spacing.xl,
-    backgroundColor: colors.surfaceMuted
+    padding: spacing.xl
   },
   unavailableTitle: {
     ...textStyles.body,
     fontFamily: fontFamilies.extraBold,
-    color: colors.text,
     textAlign: "center"
   },
   unavailableText: {
     ...textStyles.small,
-    color: colors.textMuted,
     textAlign: "center",
   },
   markerWrapper: {
     alignItems: "center",
-    ...shadows.pin
+    justifyContent: "flex-end"
+  },
+  markerWrapperSelected: {
+    transform: [{ translateY: -4 }]
   },
   markerPressed: {
     opacity: 0.86
   },
   marker: {
-    width: 38,
-    height: 38,
+    width: 42,
+    height: 42,
     borderRadius: radii.xl,
     borderBottomLeftRadius: radii.sm,
-    backgroundColor: colors.white,
-    borderWidth: 2,
+    borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
     transform: [{ rotate: "-45deg" }]
+  },
+  markerSelected: {
+    borderWidth: 3,
+    width: 48,
+    height: 48
+  },
+  markerPulse: {
+    width: 18,
+    height: 4,
+    borderRadius: radii.pill,
+    marginTop: spacing.xs,
+    opacity: 0.72
+  },
+  markerInner: {
+    width: 28,
+    height: 28,
+    borderRadius: radii.pill,
+    alignItems: "center",
+    justifyContent: "center"
   },
   markerEmoji: {
     fontSize: 15,

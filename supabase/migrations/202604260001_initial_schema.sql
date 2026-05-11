@@ -115,9 +115,9 @@ create table if not exists public.event_messages (
 
 create table if not exists public.reports (
   id uuid primary key default gen_random_uuid(),
-  reporter_id uuid not null references public.profiles(id) on delete cascade,
-  reported_event_id uuid references public.events(id) on delete cascade,
-  reported_user_id uuid references public.profiles(id) on delete cascade,
+  reporter_id uuid references public.profiles(id) on delete set null,
+  reported_event_id uuid references public.events(id) on delete set null,
+  reported_user_id uuid references public.profiles(id) on delete set null,
   report_type text not null check (
     report_type in ('safety', 'spam', 'harassment', 'misleading', 'other')
   ),
@@ -128,7 +128,8 @@ create table if not exists public.reports (
   ),
   created_at timestamptz not null default now(),
   constraint one_report_target check (
-    (reported_event_id is not null and reported_user_id is null)
+    (reported_event_id is null and reported_user_id is null)
+    or (reported_event_id is not null and reported_user_id is null)
     or (reported_event_id is null and reported_user_id is not null)
   ),
   constraint report_reason_length check (char_length(reason) between 4 and 280),
@@ -234,6 +235,29 @@ as $$
   );
 $$;
 
+create or replace function public.get_event_participant_counts(
+  target_event_ids uuid[]
+)
+returns table(event_id uuid, participant_count integer)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select e.id as event_id, count(ep.user_id)::integer as participant_count
+  from public.events e
+  left join public.event_participants ep on ep.event_id = e.id
+  where e.id = any(target_event_ids)
+    and (
+      e.status = 'published'
+      or e.host_id = auth.uid()
+      or public.is_event_member(e.id, auth.uid())
+    )
+  group by e.id;
+$$;
+
+grant execute on function public.get_event_participant_counts(uuid[]) to anon, authenticated;
+
 create or replace function public.validate_event_join()
 returns trigger
 language plpgsql
@@ -305,16 +329,13 @@ using (auth.uid() = host_id);
 
 drop policy if exists "Participants visible for published or own events"
 on public.event_participants;
-create policy "Participants visible for published or own events"
+drop policy if exists "Participants visible to event members and hosts"
+on public.event_participants;
+create policy "Participants visible to event members and hosts"
 on public.event_participants for select
 using (
   user_id = auth.uid()
-  or exists (
-    select 1
-    from public.events e
-    where e.id = event_id
-      and (e.status = 'published' or e.host_id = auth.uid())
-  )
+  or public.is_event_member(event_id, auth.uid())
 );
 
 drop policy if exists "Users can join published events"

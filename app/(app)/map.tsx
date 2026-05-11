@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { Platform, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
-import { MapPin, Plus } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { MapPin } from "lucide-react-native";
 import { EventMap } from "@/components/maps/EventMap";
 import { EventFilters } from "@/components/events/EventFilters";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -9,10 +10,11 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { Screen } from "@/components/ui/Screen";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { EventCard } from "@/components/events/EventCard";
-import { Button } from "@/components/ui/Button";
-import { useDeviceOrigin, useEvents } from "@/hooks/useEvents";
+import { PlanBottomSheet } from "@/components/events/PlanBottomSheet";
+import { useEvents } from "@/hooks/useEvents";
+import { useAppTheme } from "@/hooks/useAppTheme";
 import { GLOBAL_MAP_CENTER } from "@/lib/distance";
-import { colors, fontFamilies, radii, shadows, spacing, textStyles } from "@/lib/theme";
+import { fontFamilies, radii, spacing, textStyles } from "@/lib/theme";
 import type { EventFilters as EventFilterState } from "@/types/domain";
 
 const MAP_FILTERS: EventFilterState = {
@@ -20,11 +22,28 @@ const MAP_FILTERS: EventFilterState = {
 };
 
 export default function MapScreen() {
+  const { colors, shadows } = useAppTheme();
+  const insets = useSafeAreaInsets();
   const [filters, setFilters] = useState<EventFilterState>(MAP_FILTERS);
-  const origin = useDeviceOrigin();
-  const { events, loading, error, refresh } = useEvents(filters);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [sheetExpanded, setSheetExpanded] = useState(true);
+  const { events, loading, error, refresh, origin } = useEvents(filters);
   const center = origin ?? GLOBAL_MAP_CENTER;
-  const eventCountLabel = `${events.length} ${events.length === 1 ? "plan" : "plans"}`;
+  const topPanelTop = spacing.lg + Math.max(insets.top * 0.15, 0);
+  const selectedEvent = useMemo(
+    () => events.find((event) => event.id === selectedEventId) ?? events[0] ?? null,
+    [events, selectedEventId]
+  );
+
+  useEffect(() => {
+    if (events.length === 0) {
+      setSelectedEventId(null);
+      return;
+    }
+    if (!selectedEventId || !events.some((event) => event.id === selectedEventId)) {
+      setSelectedEventId(events[0].id);
+    }
+  }, [events, selectedEventId]);
 
   if (Platform.OS === "web") {
     return (
@@ -58,87 +77,52 @@ export default function MapScreen() {
 
   return (
     <Screen scroll={false} contentStyle={styles.screen}>
-      <View style={styles.mapFrame}>
+      <View style={[styles.mapFrame, { backgroundColor: colors.surfaceMuted }]}>
         {!loading && !error ? (
           <EventMap
             events={events}
             center={center}
             hasDeviceOrigin={Boolean(origin)}
-            onEventPress={(event) => router.push(`/event/${event.id}`)}
+            compassTopInset={topPanelTop + 126}
+            selectedEventId={selectedEvent?.id}
+            onEventPress={(event) => {
+              setSelectedEventId(event.id);
+              setSheetExpanded(false);
+            }}
           />
         ) : (
-          <View style={styles.mapFallback} />
+          <View style={[styles.mapFallback, { backgroundColor: colors.surfaceMuted }]} />
         )}
 
-        <View style={styles.topPanel}>
-          <View style={styles.topRow}>
-            <View style={styles.locationPill}>
+        <View style={[styles.topPanel, { top: topPanelTop }]}>
+          <View style={[styles.topRow, { backgroundColor: `${colors.surface}EE`, borderColor: colors.border, ...shadows.soft }]}>
+            <View style={[styles.locationPill, { backgroundColor: `${colors.surface}EE`, borderColor: colors.border, ...shadows.soft }]}>
               <MapPin size={15} color={colors.primary500} />
-              <Text numberOfLines={1} style={styles.locationText}>
+              <Text numberOfLines={1} style={[styles.locationText, { color: colors.text }]}>
                 {origin ? "Near you" : "Worldwide"}
               </Text>
-              <Text numberOfLines={1} style={styles.locationSubtext}>
+              <Text numberOfLines={1} style={[styles.locationSubtext, { color: colors.textMuted }]}>
                 · Today → +7 days
               </Text>
             </View>
-            <Button
-              title="Host"
-              icon={<Plus size={17} color={colors.white} />}
-              onPress={() => router.push("/create-event")}
-              style={styles.hostButton}
-            />
           </View>
           <EventFilters filters={filters} onChange={setFilters} compact />
         </View>
 
-        {loading ? (
-          <View style={styles.centerOverlay}>
-            <LoadingState message="Loading this week's plans..." />
-          </View>
-        ) : null}
-
-        {error ? (
-          <View style={styles.centerOverlay}>
-            <EmptyState
-              title="Could not load map"
-              message={error}
-              actionTitle="Try again"
-              onAction={refresh}
-            />
-          </View>
-        ) : null}
-
-        {!loading && !error ? (
-          <View style={styles.summaryPill}>
-            <Text style={styles.summaryText}>{eventCountLabel} this week</Text>
-          </View>
-        ) : null}
-
-        {!loading && !error && events.length === 0 ? (
-          <View style={styles.mapEmpty}>
-            <Text style={styles.mapEmptyTitle}>No plans this week</Text>
-            <Text style={styles.mapEmptyText}>Create the first low-pressure meetup around a public place.</Text>
-          </View>
-        ) : null}
-
-        {!loading && !error && events.length > 0 ? (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.eventRailContent}
-            style={styles.eventRail}
-          >
-            {events.map((event) => (
-              <View key={event.id} style={styles.previewWrap}>
-                <EventCard
-                  event={event}
-                  compact
-                  onPress={() => router.push(`/event/${event.id}`)}
-                />
-              </View>
-            ))}
-          </ScrollView>
-        ) : null}
+        <PlanBottomSheet
+          events={events}
+          loading={loading}
+          error={error}
+          filters={filters}
+          onFiltersChange={setFilters}
+          onEventPress={(event) => router.push(`/event/${event.id}`)}
+          onCreatePress={() => router.push("/create-event")}
+          onRetry={refresh}
+          bottomInset={Math.max(insets.bottom, spacing.sm)}
+          selectedEvent={selectedEvent}
+          expanded={sheetExpanded}
+          onExpandedChange={setSheetExpanded}
+        />
       </View>
     </Screen>
   );
@@ -152,12 +136,10 @@ const styles = StyleSheet.create({
   },
   mapFrame: {
     flex: 1,
-    overflow: "hidden",
-    backgroundColor: colors.surfaceMuted
+    overflow: "hidden"
   },
   mapFallback: {
-    flex: 1,
-    backgroundColor: colors.surfaceMuted
+    flex: 1
   },
   topPanel: {
     position: "absolute",
@@ -169,98 +151,31 @@ const styles = StyleSheet.create({
   topRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.md
+    gap: spacing.md,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    padding: spacing.xs
   },
   locationPill: {
     flex: 1,
     minHeight: 44,
     borderRadius: radii.pill,
-    backgroundColor: `${colors.white}EE`,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderWidth: 0,
     paddingHorizontal: spacing.ml,
     alignItems: "center",
     flexDirection: "row",
-    gap: spacing.xs,
-    ...shadows.soft
+    gap: spacing.xs
   },
   locationText: {
     ...textStyles.small,
-    fontFamily: fontFamilies.extraBold,
-    color: colors.text,
+    fontFamily: fontFamilies.extraBold
   },
   locationSubtext: {
     ...textStyles.tiny,
-    color: colors.textMuted,
     flexShrink: 1
-  },
-  hostButton: {
-    minHeight: 44,
-    paddingHorizontal: spacing.md
-  },
-  centerOverlay: {
-    position: "absolute",
-    left: spacing.lg,
-    right: spacing.lg,
-    top: "34%",
-    borderRadius: radii.lg,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: spacing.md
-  },
-  summaryPill: {
-    position: "absolute",
-    top: 142,
-    left: spacing.lg,
-    maxWidth: "76%",
-    borderRadius: radii.pill,
-    backgroundColor: `${colors.white}EE`,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    ...shadows.soft
   },
   summaryText: {
     ...textStyles.small,
-    fontFamily: fontFamilies.extraBold,
-    color: colors.text,
-  },
-  mapEmpty: {
-    position: "absolute",
-    left: spacing.lg,
-    right: spacing.lg,
-    bottom: spacing.lg,
-    backgroundColor: `${colors.surface}F2`,
-    borderRadius: radii.xl,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.lg,
-    gap: spacing.xs,
-    ...shadows.medium
-  },
-  mapEmptyTitle: {
-    ...textStyles.body,
-    fontFamily: fontFamilies.extraBold,
-    color: colors.text,
-  },
-  mapEmptyText: {
-    ...textStyles.small,
-    color: colors.textMuted,
-  },
-  eventRail: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0
-  },
-  eventRailContent: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl,
-    gap: spacing.md
-  },
-  previewWrap: {
-    paddingVertical: spacing.xs
+    fontFamily: fontFamilies.extraBold
   }
 });

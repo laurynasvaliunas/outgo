@@ -1,15 +1,20 @@
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { colors, spacing, textStyles } from "@/lib/theme";
+import { BrandMark } from "@/components/brand/BrandMark";
+import { spacing, textStyles } from "@/lib/theme";
+import { useThemeColors } from "@/hooks/useAppTheme";
 
 type LoadingStateProps = {
   message?: string;
 };
 
 export function LoadingState({ message = "Loading..." }: LoadingStateProps) {
+  const colors = useThemeColors();
+
   return (
     <View style={styles.wrapper}>
+      <BrandMark size="sm" />
       <ActivityIndicator color={colors.primary} />
-      <Text style={styles.text}>{message}</Text>
+      <Text style={[styles.text, { color: colors.textMuted }]}>{message}</Text>
     </View>
   );
 }
@@ -22,7 +27,6 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   text: {
-    color: colors.textMuted,
     ...textStyles.small
   }
 });

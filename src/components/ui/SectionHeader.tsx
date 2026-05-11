@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import type { ReactNode } from "react";
-import { colors, fontFamilies, spacing, textStyles } from "@/lib/theme";
+import { fontFamilies, spacing, textStyles } from "@/lib/theme";
+import { useThemeColors } from "@/hooks/useAppTheme";
 
 type SectionHeaderProps = {
   title: string;
@@ -9,11 +10,13 @@ type SectionHeaderProps = {
 };
 
 export function SectionHeader({ title, subtitle, right }: SectionHeaderProps) {
+  const colors = useThemeColors();
+
   return (
     <View style={styles.wrapper}>
       <View style={styles.copy}>
-        <Text style={styles.title}>{title}</Text>
-        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+        {subtitle ? <Text style={[styles.subtitle, { color: colors.textMuted }]}>{subtitle}</Text> : null}
       </View>
       {right}
     </View>
@@ -34,11 +37,9 @@ const styles = StyleSheet.create({
   title: {
     ...textStyles.heading,
     fontFamily: fontFamilies.extraBold,
-    color: colors.text,
   },
   subtitle: {
     ...textStyles.small,
-    color: colors.textMuted,
     fontFamily: fontFamilies.medium
   }
 });

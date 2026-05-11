@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const chipListSchema = z.array(z.string().min(1)).max(12, "Pick up to 12 items.");
+
 export const profileSchema = z.object({
   full_name: z.string().min(2, "Add your name."),
   username: z
@@ -11,7 +13,10 @@ export const profileSchema = z.object({
   bio: z.string().max(220, "Keep your bio under 220 characters.").optional(),
   city: z.string().min(2, "Add your city."),
   age_range: z.string().optional(),
-  interests: z.array(z.string()).max(12, "Pick up to 12 interests.")
+  interests: chipListSchema,
+  hobbies: chipListSchema,
+  life_context: chipListSchema,
+  social_goals: chipListSchema
 });
 
 export type ProfileInput = z.infer<typeof profileSchema>;

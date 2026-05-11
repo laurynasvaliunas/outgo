@@ -1,12 +1,15 @@
 import { Redirect, Tabs } from "expo-router";
-import { CalendarCheck, ListFilter, Map, PlusCircle, User } from "lucide-react-native";
+import { CalendarCheck, ListFilter, Map, User } from "lucide-react-native";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Screen } from "@/components/ui/Screen";
-import { colors, fontFamilies, shadows } from "@/lib/theme";
+import { fontFamilies } from "@/lib/theme";
+import { useAppTheme } from "@/hooks/useAppTheme";
 import { useAuth } from "@/hooks/useAuth";
+import { isProfileComplete } from "@/services/supabase/profiles";
 
 export default function AppTabsLayout() {
-  const { session, loading } = useAuth();
+  const { colors, shadows } = useAppTheme();
+  const { session, profile, loading } = useAuth();
 
   if (loading) {
     return (
@@ -18,6 +21,10 @@ export default function AppTabsLayout() {
 
   if (!session) {
     return <Redirect href="/login" />;
+  }
+
+  if (!isProfileComplete(profile)) {
+    return <Redirect href="/profile/edit" />;
   }
 
   return (
@@ -66,10 +73,7 @@ export default function AppTabsLayout() {
       />
       <Tabs.Screen
         name="create-event"
-        options={{
-          title: "Create",
-          tabBarIcon: ({ color, size }) => <PlusCircle color={color} size={size} />
-        }}
+        options={{ href: null }}
       />
       <Tabs.Screen
         name="profile"

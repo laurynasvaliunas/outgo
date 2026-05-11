@@ -9,9 +9,10 @@ import { Screen } from "@/components/ui/Screen";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { useAuth } from "@/hooks/useAuth";
+import { useThemeColors } from "@/hooks/useAppTheme";
 import { createReport } from "@/services/supabase/reports";
 import { reportSchema, type ReportInput } from "@/validation/report";
-import { colors, fontFamilies, spacing, textStyles } from "@/lib/theme";
+import { fontFamilies, spacing, textStyles } from "@/lib/theme";
 import { track } from "@/lib/analytics";
 
 const reasons: { label: string; value: ReportInput["report_type"] }[] = [
@@ -23,6 +24,7 @@ const reasons: { label: string; value: ReportInput["report_type"] }[] = [
 ];
 
 export default function ReportScreen() {
+  const colors = useThemeColors();
   const { targetType, eventId, userId } = useLocalSearchParams<{
     targetType?: "event" | "user";
     eventId?: string;
@@ -86,10 +88,10 @@ export default function ReportScreen() {
       <Card style={styles.card}>
         <Flag size={24} color={colors.danger} />
         <View style={styles.cardCopy}>
-          <Text style={styles.cardTitle}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>
             Reporting {targetType === "user" ? "a user" : "an event"}
           </Text>
-          <Text style={styles.cardText}>
+          <Text style={[styles.cardText, { color: colors.textMuted }]}>
             Include enough context for a moderator to understand the issue.
           </Text>
         </View>
@@ -136,11 +138,9 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     ...textStyles.body,
-    fontFamily: fontFamilies.extraBold,
-    color: colors.text,
+    fontFamily: fontFamilies.extraBold
   },
   cardText: {
-    ...textStyles.small,
-    color: colors.textMuted,
+    ...textStyles.small
   }
 });

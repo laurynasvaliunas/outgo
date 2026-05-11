@@ -29,7 +29,7 @@ export type ReportTargetType = "event" | "user";
 
 export type EventFilters = {
   category?: EventCategory | "all";
-  date?: "today" | "tomorrow" | "week" | "all";
+  date?: "today" | "tomorrow" | "weekend" | "week" | "all";
   distanceKm?: number;
   priceType?: PriceType | "all";
   vibe?: string;
@@ -45,8 +45,17 @@ export type PublicProfile = {
   city: string;
   age_range: string | null;
   interests: string[];
+  hobbies: string[];
+  life_context: string[];
+  social_goals: string[];
   created_at: string;
   updated_at: string;
+};
+
+export type ProfileStats = {
+  plansJoined: number;
+  plansHosted: number;
+  memberSince: string;
 };
 
 export type OfflineEvent = {
@@ -77,6 +86,10 @@ export type EventWithMeta = OfflineEvent & {
     PublicProfile,
     "id" | "full_name" | "username" | "avatar_url" | "city"
   > | null;
+  participants?: Pick<
+    PublicProfile,
+    "id" | "full_name" | "username" | "avatar_url"
+  >[];
   participant_count: number;
   is_joined?: boolean;
   is_favorited?: boolean;
@@ -89,6 +102,51 @@ export type EventMessage = {
   body: string;
   created_at: string;
   sender?: Pick<PublicProfile, "id" | "full_name" | "username" | "avatar_url">;
+};
+
+export const NOTIFICATION_TYPES = [
+  "event_chat",
+  "event_joined",
+  "event_update",
+  "event_cancelled",
+  "event_reminder",
+  "report_update"
+] as const;
+
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+export type NotificationPreferences = {
+  user_id: string;
+  master_enabled: boolean;
+  chat_messages: boolean;
+  event_reminders: boolean;
+  host_updates: boolean;
+  joins: boolean;
+  safety_updates: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type PushNotificationData = {
+  type?: NotificationType;
+  eventId?: string;
+  messageId?: string;
+  reportId?: string;
+  reminderOffsetMinutes?: number;
+};
+
+export type SubscriptionStatus = {
+  user_id: string;
+  revenuecat_app_user_id: string;
+  entitlement_id: string;
+  is_active: boolean;
+  product_id: string | null;
+  store: string | null;
+  environment: string | null;
+  expiration_at: string | null;
+  latest_event_type: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export type AppError = {

@@ -11,10 +11,12 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 import { EventCard } from "@/components/events/EventCard";
 import { EventFilters } from "@/components/events/EventFilters";
 import { useEvents } from "@/hooks/useEvents";
-import { colors, fontFamilies, spacing, textStyles } from "@/lib/theme";
+import { useThemeColors } from "@/hooks/useAppTheme";
+import { fontFamilies, spacing, textStyles } from "@/lib/theme";
 import type { EventFilters as Filters } from "@/types/domain";
 
 export default function DiscoverScreen() {
+  const colors = useThemeColors();
   const [filters, setFilters] = useState<Filters>({ date: "week", category: "all" });
   const { events, loading, error, refresh } = useEvents(filters);
   const featuredEvents = useMemo(() => events.slice(0, 5), [events]);
@@ -37,9 +39,9 @@ export default function DiscoverScreen() {
         }
       />
 
-      <Card style={styles.positioning}>
-        <Text style={styles.positioningTitle}>Less feed. More fresh air.</Text>
-        <Text style={styles.positioningText}>
+      <Card style={[styles.positioning, { backgroundColor: colors.primary900 }]}>
+        <Text style={[styles.positioningTitle, { color: colors.surface }]}>Less feed. More fresh air.</Text>
+        <Text style={[styles.positioningText, { color: colors.primarySoft }]}>
           OutGo keeps plans bounded: limited group size, public places,
           simple chat and no infinite social graph.
         </Text>
@@ -89,8 +91,8 @@ export default function DiscoverScreen() {
       <Card style={styles.safety}>
         <ShieldCheck size={22} color={colors.success} />
         <View style={styles.safetyCopy}>
-          <Text style={styles.safetyTitle}>A good first meetup is public.</Text>
-          <Text style={styles.safetyText}>
+          <Text style={[styles.safetyTitle, { color: colors.text }]}>A good first meetup is public.</Text>
+          <Text style={[styles.safetyText, { color: colors.textMuted }]}>
             Hosts are asked to choose public places, describe expectations and
             keep groups intentionally small.
           </Text>
@@ -109,17 +111,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md
   },
   positioning: {
-    gap: spacing.sm,
-    backgroundColor: colors.primary900
+    gap: spacing.sm
   },
   positioningTitle: {
     ...textStyles.heading,
-    fontFamily: fontFamilies.extraBold,
-    color: colors.surface,
+    fontFamily: fontFamilies.extraBold
   },
   positioningText: {
-    ...textStyles.body,
-    color: colors.primarySoft,
+    ...textStyles.body
   },
   actions: {
     flexDirection: "row",
@@ -133,8 +132,7 @@ const styles = StyleSheet.create({
   },
   safety: {
     flexDirection: "row",
-    gap: spacing.md,
-    backgroundColor: colors.surface
+    gap: spacing.md
   },
   safetyCopy: {
     flex: 1,
@@ -142,11 +140,9 @@ const styles = StyleSheet.create({
   },
   safetyTitle: {
     ...textStyles.body,
-    fontFamily: fontFamilies.extraBold,
-    color: colors.text,
+    fontFamily: fontFamilies.extraBold
   },
   safetyText: {
-    ...textStyles.small,
-    color: colors.textMuted,
+    ...textStyles.small
   }
 });

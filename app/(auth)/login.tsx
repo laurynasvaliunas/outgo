@@ -1,19 +1,30 @@
 import { useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { Link, router } from "expo-router";
-import { Mail, Lock } from "lucide-react-native";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react-native";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Screen } from "@/components/ui/Screen";
-import { colors, fontFamilies, spacing, textStyles } from "@/lib/theme";
+import { fontFamilies, spacing, textStyles } from "@/lib/theme";
+import { useThemeColors } from "@/hooks/useAppTheme";
 import { loginSchema } from "@/validation/auth";
-import { signInWithEmail } from "@/services/supabase/auth";
+import {
+  getFriendlyAuthErrorMessage,
+  resendConfirmationEmail,
+  sendPasswordResetEmail,
+  signInWithEmail
+} from "@/services/supabase/auth";
 import { track } from "@/lib/analytics";
+import { authRedirects } from "@/lib/authRedirects";
 
 export default function LoginScreen() {
+  const colors = useThemeColors();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
 
   const submit = async () => {
@@ -36,10 +47,64 @@ export default function LoginScreen() {
     } catch (error) {
       Alert.alert(
         "Could not log in",
-        error instanceof Error ? error.message : "Please try again."
+        getFriendlyAuthErrorMessage(error)
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setErrors((current) => ({
+        ...current,
+        email: "Enter your email first."
+      }));
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      await sendPasswordResetEmail(trimmedEmail, authRedirects.passwordReset);
+      Alert.alert(
+        "Check your email",
+        "We sent a secure password reset link if this email has an OutGo account."
+      );
+    } catch (error) {
+      Alert.alert(
+        "Could not send reset link",
+        getFriendlyAuthErrorMessage(error)
+      );
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setErrors((current) => ({
+        ...current,
+        email: "Enter your email first."
+      }));
+      return;
+    }
+
+    setResendLoading(true);
+    try {
+      await resendConfirmationEmail(trimmedEmail, authRedirects.signup);
+      Alert.alert(
+        "Confirmation sent",
+        "If this email has an unconfirmed OutGo account, a new confirmation link is on the way."
+      );
+    } catch (error) {
+      Alert.alert(
+        "Could not resend confirmation",
+        getFriendlyAuthErrorMessage(error)
+      );
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -47,8 +112,8 @@ export default function LoginScreen() {
     <Screen centered>
       <View style={styles.header}>
         <Text style={styles.emoji}>👋</Text>
-        <Text style={styles.title}>Welcome back</Text>
-        <Text style={styles.subtitle}>Your next quiet plan is waiting.</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Welcome back</Text>
+        <Text style={[styles.subtitle, { color: colors.textMuted }]}>Your next quiet plan is waiting.</Text>
       </View>
       <View style={styles.form}>
         <Input
@@ -62,17 +127,44 @@ export default function LoginScreen() {
         />
         <Input
           label="Password"
-          secureTextEntry
+          secureTextEntry={!passwordVisible}
           value={password}
           onChangeText={setPassword}
           error={errors.password}
           placeholder="At least 6 characters"
+          rightIcon={
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={passwordVisible ? "Hide password" : "Show password"}
+              onPress={() => setPasswordVisible((visible) => !visible)}
+            >
+              {passwordVisible ? (
+                <EyeOff size={20} color={colors.textMuted} />
+              ) : (
+                <Eye size={20} color={colors.textMuted} />
+              )}
+            </Pressable>
+          }
         />
         <Button
           title="Log in"
           loading={loading}
           icon={<Lock size={18} color="#FFFFFF" />}
           onPress={submit}
+        />
+        <Button
+          title="Forgot password?"
+          variant="ghost"
+          loading={resetLoading}
+          onPress={handleForgotPassword}
+          style={styles.forgotButton}
+        />
+        <Button
+          title="Resend confirmation"
+          variant="ghost"
+          loading={resendLoading}
+          onPress={handleResendConfirmation}
+          style={styles.forgotButton}
         />
       </View>
       <Link href="/register" asChild>
@@ -84,11 +176,11 @@ export default function LoginScreen() {
       </Link>
       <View style={styles.legal}>
         <Link href="/legal/terms" asChild>
-          <Text style={styles.legalLink}>Terms</Text>
+          <Text style={[styles.legalLink, { color: colors.primary500 }]}>Terms</Text>
         </Link>
-        <Text style={styles.legalText}>and</Text>
+        <Text style={[styles.legalText, { color: colors.textMuted }]}>and</Text>
         <Link href="/legal/privacy" asChild>
-          <Text style={styles.legalLink}>Privacy</Text>
+          <Text style={[styles.legalLink, { color: colors.primary500 }]}>Privacy</Text>
         </Link>
       </View>
     </Screen>
@@ -105,14 +197,17 @@ const styles = StyleSheet.create({
   },
   title: {
     ...textStyles.title,
-    color: colors.text,
   },
   subtitle: {
     ...textStyles.body,
-    color: colors.textMuted
   },
   form: {
     gap: spacing.md
+  },
+  forgotButton: {
+    alignSelf: "center",
+    minHeight: 38,
+    paddingHorizontal: spacing.md
   },
   legal: {
     flexDirection: "row",
@@ -122,11 +217,9 @@ const styles = StyleSheet.create({
   },
   legalText: {
     ...textStyles.small,
-    color: colors.textMuted,
   },
   legalLink: {
     ...textStyles.small,
-    fontFamily: fontFamilies.bold,
-    color: colors.primary500
+    fontFamily: fontFamilies.bold
   }
 });

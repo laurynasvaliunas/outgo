@@ -1,21 +1,35 @@
 import { StyleSheet, View, type ViewProps } from "react-native";
-import { colors, radii, shadows, spacing } from "@/lib/theme";
+import { radii, spacing } from "@/lib/theme";
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 type CardProps = ViewProps & {
   padded?: boolean;
 };
 
 export function Card({ style, padded = true, ...props }: CardProps) {
-  return <View style={[styles.card, padded && styles.padded, style]} {...props} />;
+  const { colors, shadows } = useAppTheme();
+
+  return (
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+          ...shadows.soft
+        },
+        padded && styles.padded,
+        style
+      ]}
+      {...props}
+    />
+  );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
     borderRadius: radii.xl,
-    borderWidth: 1,
-    borderColor: colors.border,
-    ...shadows.soft
+    borderWidth: 1
   },
   padded: {
     padding: spacing.lg

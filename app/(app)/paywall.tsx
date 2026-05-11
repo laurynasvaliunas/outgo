@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
+  Image,
+  Linking,
   Pressable,
   StyleSheet,
   Text,
@@ -12,15 +14,15 @@ import {
   ArrowLeft,
   Check,
   CreditCard,
-  RefreshCw,
-  Sparkles
+  RefreshCw
 } from "lucide-react-native";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Screen } from "@/components/ui/Screen";
-import { useRevenueCatCustomerInfo } from "@/hooks/useRevenueCat";
+import { useAppTheme } from "@/hooks/useAppTheme";
+import { usePlusStatus } from "@/hooks/usePlusStatus";
 import { track } from "@/lib/analytics";
 import {
   getRevenueCatPaywallOffering,
@@ -32,12 +34,17 @@ import {
   purchaseRevenueCatPackage,
   restoreRevenueCatPurchases
 } from "@/lib/revenuecat";
-import { colors, fontFamilies, radii, shadows, spacing, textStyles } from "@/lib/theme";
+import { fontFamilies, radii, spacing, textStyles } from "@/lib/theme";
+import { haptic } from "@/lib/haptics";
 
 type PlanKey = "monthly" | "yearly";
 
+const APPLE_STANDARD_EULA_URL = "https://www.apple.com/legal/macapps/stdeula/";
+const logoSource = require("../../assets/images/icon.png");
+
 export default function PaywallScreen() {
-  const purchases = useRevenueCatCustomerInfo();
+  const { colors, shadows } = useAppTheme();
+  const plus = usePlusStatus();
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
   const [loadingOffering, setLoadingOffering] = useState(true);
   const [offeringError, setOfferingError] = useState<string | null>(null);
@@ -68,7 +75,7 @@ export default function PaywallScreen() {
     () => getRevenueCatPaywallPackages(offering),
     [offering]
   );
-  const active = purchases.hasConfiguredEntitlement;
+  const active = plus.active;
 
   const plans = useMemo(
     () => [
@@ -109,6 +116,7 @@ export default function PaywallScreen() {
     setSelectedPlan(plan);
     setPurchasingPlan(plan);
     try {
+      haptic("light");
       const customerInfo = await purchaseRevenueCatPackage(aPackage);
       track("paywall_purchase_complete", {
         plan,
@@ -116,10 +124,11 @@ export default function PaywallScreen() {
       });
 
       if (hasActiveRevenueCatEntitlement(customerInfo)) {
+        haptic("success");
         Alert.alert("OutGo Plus is active", "Thanks for supporting more real-life plans.");
-        router.back();
-        return;
-      }
+          router.back();
+          return;
+        }
 
       Alert.alert(
         "Purchase complete",
@@ -134,7 +143,7 @@ export default function PaywallScreen() {
       }
     } finally {
       setPurchasingPlan(null);
-      await purchases.refresh();
+      await plus.refresh();
     }
   };
 
@@ -142,7 +151,7 @@ export default function PaywallScreen() {
     setRestoring(true);
     try {
       const customerInfo = await restoreRevenueCatPurchases();
-      await purchases.refresh();
+      await plus.refresh();
 
       if (hasActiveRevenueCatEntitlement(customerInfo)) {
         Alert.alert("Restored", "OutGo Plus is active on this account.");
@@ -179,32 +188,60 @@ export default function PaywallScreen() {
   }
 
   return (
-    <Screen backgroundColor={colors.darkBg} contentStyle={styles.screen}>
+    <Screen contentStyle={styles.screen}>
       <TopBar />
       <View style={styles.header}>
-        <View style={styles.iconCircle}>
-          <Sparkles size={28} color={colors.amber500} />
+        <View
+          style={[
+            styles.iconCircle,
+            {
+              backgroundColor: colors.backgroundElevated,
+              borderColor: colors.border,
+              ...shadows.medium
+            }
+          ]}
+        >
+          <Image source={logoSource} style={styles.logo} resizeMode="cover" />
         </View>
-        <Text style={styles.heroTitle}>
+        <Text style={[styles.heroTitle, { color: colors.text }]}>
           {active ? "OutGo Plus is active" : "OutGo Plus"}
         </Text>
-        <Text style={styles.heroSubtitle}>
-          Support an offline-first community and unlock the Plus plan as new member features roll out.
+        <Text style={[styles.heroSubtitle, { color: colors.textMuted }]}>
+          {active
+            ? plus.backendActive
+              ? "Your supporter access is active and synced."
+              : "Your supporter access is active on this device and syncing."
+            : "An early supporter plan for people who want OutGo to stay calm, useful and offline-first."}
         </Text>
       </View>
 
-      <Card style={styles.benefitsCard}>
+      <Card style={[styles.benefitsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         {[
-          "Unlimited access to Plus as premium features are released.",
-          "Priority access to upcoming discovery and hosting tools.",
-          "Support a calmer app that helps people meet offline."
+          "Support a calmer app that helps people meet offline.",
+          "Keep your supporter access as Plus member features roll out.",
+          "Help fund better discovery, hosting and safety tools without addictive feeds."
         ].map((benefit) => (
           <View key={benefit} style={styles.benefitRow}>
-            <Check size={18} color={colors.amber500} />
-            <Text style={styles.benefitText}>{benefit}</Text>
+            <Check size={18} color={colors.accent} />
+            <Text style={[styles.benefitText, { color: colors.text }]}>{benefit}</Text>
           </View>
         ))}
       </Card>
+
+      <View style={styles.promiseGrid}>
+        <Card style={[styles.promiseCard, { backgroundColor: colors.primarySofter, borderColor: colors.primary100 }]}>
+          <Text style={[styles.promiseKicker, { color: colors.primary500 }]}>Available now</Text>
+          <Text style={[styles.promiseBody, { color: colors.text }]}>
+            Supporter access, purchase restore, and subscription status connected to your OutGo account.
+          </Text>
+        </Card>
+        <Card style={[styles.promiseCard, { backgroundColor: colors.accentSoft, borderColor: `${colors.accent}55` }]}>
+          <Text style={[styles.promiseKicker, { color: colors.accent }]}>Rolling out next</Text>
+          <Text style={[styles.promiseBody, { color: colors.text }]}>
+            Better hosting tools, richer discovery, and safety improvements for small real-life plans.
+          </Text>
+        </Card>
+      </View>
 
       {loadingOffering ? <LoadingState message="Loading plans..." /> : null}
       {offeringError ? (
@@ -228,7 +265,12 @@ export default function PaywallScreen() {
               badge={plan.badge}
               selected={selectedPlan === plan.key}
               disabled={!plan.revenueCatPackage}
-              onPress={() => setSelectedPlan(plan.key)}
+              colors={colors}
+              shadow={shadows.pin}
+              onPress={() => {
+                haptic("select");
+                setSelectedPlan(plan.key);
+              }}
             />
           ))}
         </View>
@@ -249,21 +291,29 @@ export default function PaywallScreen() {
             variant="secondary"
             loading={restoring}
             icon={<RefreshCw size={18} color={colors.primaryDark} />}
-            onPress={handleRestore}
+            onPress={() => {
+              haptic("light");
+              void handleRestore();
+            }}
           />
         </View>
       ) : null}
 
-      <Text style={styles.storeNote}>
+      <Text style={[styles.storeNote, { color: colors.textMuted }]}>
         Your final subscription price is confirmed by the App Store or Google Play
         before checkout. Subscriptions renew automatically until cancelled.
       </Text>
 
       <View style={styles.legalLinks}>
         <LegalLink title="Terms" route="/legal/terms" />
-        <Text style={styles.legalDivider}>·</Text>
+        <Text style={[styles.legalDivider, { color: colors.textSubtle }]}>·</Text>
+        <ExternalLegalLink
+          title="Terms of Use (EULA)"
+          url={APPLE_STANDARD_EULA_URL}
+        />
+        <Text style={[styles.legalDivider, { color: colors.textSubtle }]}>·</Text>
         <LegalLink title="Subscription Terms" route="/legal/subscriptions" />
-        <Text style={styles.legalDivider}>·</Text>
+        <Text style={[styles.legalDivider, { color: colors.textSubtle }]}>·</Text>
         <LegalLink title="Privacy" route="/legal/privacy" />
       </View>
     </Screen>
@@ -271,14 +321,23 @@ export default function PaywallScreen() {
 }
 
 function TopBar() {
+  const { colors } = useAppTheme();
+
   return (
     <View style={styles.topBar}>
       <Pressable
         accessibilityRole="button"
         onPress={() => router.back()}
-        style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+        style={({ pressed }) => [
+          styles.backButton,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border
+          },
+          pressed && styles.pressed
+        ]}
       >
-        <ArrowLeft size={22} color={colors.darkText} />
+        <ArrowLeft size={22} color={colors.primaryDark} />
       </Pressable>
     </View>
   );
@@ -292,6 +351,8 @@ type PlanCardProps = {
   badge?: string;
   selected: boolean;
   disabled: boolean;
+  colors: ReturnType<typeof useAppTheme>["colors"];
+  shadow: object;
   onPress: () => void;
 };
 
@@ -303,6 +364,8 @@ function PlanCard({
   badge,
   selected,
   disabled,
+  colors,
+  shadow,
   onPress
 }: PlanCardProps) {
   return (
@@ -312,20 +375,28 @@ function PlanCard({
       onPress={onPress}
       style={({ pressed }) => [
         styles.planCard,
-        selected && styles.planCardSelected,
+        {
+          backgroundColor: selected ? colors.primarySofter : colors.surface,
+          borderColor: selected ? colors.primary500 : colors.border
+        },
+        selected && shadow,
         disabled && styles.planCardDisabled,
         pressed && !disabled && styles.pressed
       ]}
     >
       <View style={styles.planTop}>
-        <Text style={styles.planTitle}>{title}</Text>
-        {badge ? <Text style={styles.badge}>{badge}</Text> : null}
+        <Text style={[styles.planTitle, { color: colors.text }]}>{title}</Text>
+        {badge ? (
+          <Text style={[styles.badge, { backgroundColor: colors.accent, color: colors.white }]}>
+            {badge}
+          </Text>
+        ) : null}
       </View>
       <View style={styles.priceRow}>
-        <Text style={styles.price}>{price}</Text>
-        <Text style={styles.cadence}>{cadence}</Text>
+        <Text style={[styles.price, { color: colors.primaryDark }]}>{price}</Text>
+        <Text style={[styles.cadence, { color: colors.textMuted }]}>{cadence}</Text>
       </View>
-      <Text style={styles.note}>
+      <Text style={[styles.note, { color: colors.textMuted }]}>
         {disabled ? "Waiting for RevenueCat product setup." : note}
       </Text>
     </Pressable>
@@ -333,9 +404,28 @@ function PlanCard({
 }
 
 function LegalLink({ title, route }: { title: string; route: "/legal/terms" | "/legal/privacy" | "/legal/subscriptions" }) {
+  const { colors } = useAppTheme();
+
   return (
     <Pressable accessibilityRole="link" onPress={() => router.push(route)}>
-      <Text style={styles.legalLink}>{title}</Text>
+      <Text style={[styles.legalLink, { color: colors.primary500 }]}>{title}</Text>
+    </Pressable>
+  );
+}
+
+function ExternalLegalLink({ title, url }: { title: string; url: string }) {
+  const { colors } = useAppTheme();
+  const handlePress = async () => {
+    try {
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert("Could not open link", "Please try again in a moment.");
+    }
+  };
+
+  return (
+    <Pressable accessibilityRole="link" onPress={handlePress}>
+      <Text style={[styles.legalLink, { color: colors.primary500 }]}>{title}</Text>
     </Pressable>
   );
 }
@@ -352,9 +442,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: radii.pill,
-    backgroundColor: `${colors.white}12`,
     borderWidth: 1,
-    borderColor: `${colors.white}20`,
     alignItems: "center",
     justifyContent: "center"
   },
@@ -366,29 +454,28 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   iconCircle: {
-    width: 68,
-    height: 68,
-    borderRadius: radii.pill,
-    backgroundColor: `${colors.white}12`,
+    width: 78,
+    height: 78,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: `${colors.white}18`
+    overflow: "hidden"
+  },
+  logo: {
+    width: 78,
+    height: 78
   },
   heroTitle: {
     ...textStyles.title,
-    color: colors.white,
     textAlign: "center"
   },
   heroSubtitle: {
     ...textStyles.body,
-    color: colors.darkTextSub,
     textAlign: "center"
   },
   benefitsCard: {
-    gap: spacing.md,
-    backgroundColor: `${colors.white}10`,
-    borderColor: `${colors.white}16`
+    gap: spacing.md
   },
   benefitRow: {
     flexDirection: "row",
@@ -398,24 +485,32 @@ const styles = StyleSheet.create({
   benefitText: {
     ...textStyles.body,
     fontFamily: fontFamilies.semiBold,
-    flex: 1,
-    color: colors.darkText
+    flex: 1
+  },
+  promiseGrid: {
+    gap: spacing.md
+  },
+  promiseCard: {
+    gap: spacing.xs,
+    borderWidth: 1
+  },
+  promiseKicker: {
+    ...textStyles.tiny,
+    fontFamily: fontFamilies.extraBold,
+    textTransform: "uppercase"
+  },
+  promiseBody: {
+    ...textStyles.small,
+    fontFamily: fontFamilies.bold
   },
   planList: {
     gap: spacing.md
   },
   planCard: {
     borderRadius: radii.xl,
-    backgroundColor: `${colors.white}10`,
     borderWidth: 1.5,
-    borderColor: `${colors.white}14`,
     padding: spacing.lg,
     gap: spacing.sm
-  },
-  planCardSelected: {
-    borderColor: colors.primary500,
-    backgroundColor: colors.primary500,
-    ...shadows.pin
   },
   planCardDisabled: {
     opacity: 0.64
@@ -428,13 +523,10 @@ const styles = StyleSheet.create({
   },
   planTitle: {
     ...textStyles.subheading,
-    fontFamily: fontFamilies.extraBold,
-    color: colors.darkText
+    fontFamily: fontFamilies.extraBold
   },
   badge: {
     ...textStyles.tiny,
-    color: colors.white,
-    backgroundColor: colors.amber500,
     borderRadius: radii.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
@@ -446,39 +538,34 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   price: {
-    ...textStyles.title,
-    color: colors.white
+    ...textStyles.title
   },
   cadence: {
     ...textStyles.small,
-    color: colors.darkTextSub,
     paddingBottom: spacing.xs
   },
   note: {
-    ...textStyles.small,
-    color: colors.darkTextSub
+    ...textStyles.small
   },
   actions: {
     gap: spacing.md
   },
   storeNote: {
     ...textStyles.small,
-    color: colors.darkMuted,
     textAlign: "center"
   },
   legalLinks: {
     flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "center",
     alignItems: "center",
     gap: spacing.sm
   },
   legalLink: {
     ...textStyles.small,
-    fontFamily: fontFamilies.bold,
-    color: colors.darkTextSub
+    fontFamily: fontFamilies.bold
   },
   legalDivider: {
-    ...textStyles.small,
-    color: colors.darkMuted
+    ...textStyles.small
   }
 });

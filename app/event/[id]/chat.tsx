@@ -1,11 +1,13 @@
-import { useState } from "react";
-import { Alert, FlatList, StyleSheet, Text, View } from "react-native";
+import { useRef, useState } from "react";
+import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
+import { format } from "date-fns";
 import { Flag, Send, ShieldCheck } from "lucide-react-native";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { GradientSurface } from "@/components/ui/GradientSurface";
 import { Input } from "@/components/ui/Input";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Screen } from "@/components/ui/Screen";
@@ -13,13 +15,21 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useEvent } from "@/hooks/useEvents";
 import { useEventMessages } from "@/hooks/useEventMessages";
-import { colors, fontFamilies, radii, spacing, textStyles } from "@/lib/theme";
+import { useThemeColors } from "@/hooks/useAppTheme";
+import { fontFamilies, radii, spacing, textStyles } from "@/lib/theme";
+import { haptic } from "@/lib/haptics";
+import { formatEventDate } from "@/lib/date";
+import type { EventMessage } from "@/types/domain";
+
+const quickReplies = ["I'm here", "Running 5 min late", "Where exactly?", "See you soon"];
 
 export default function EventChatScreen() {
+  const colors = useThemeColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const { event, loading: eventLoading } = useEvent(id);
   const { messages, loading, error, send } = useEventMessages(id);
+  const listRef = useRef<FlatList<EventMessage>>(null);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -31,8 +41,13 @@ export default function EventChatScreen() {
     }
     setSending(true);
     try {
+      haptic("light");
       await send(body);
       setBody("");
+      haptic("success");
+      requestAnimationFrame(() => {
+        listRef.current?.scrollToEnd({ animated: true });
+      });
     } catch (sendError) {
       Alert.alert(
         "Could not send",
@@ -70,11 +85,23 @@ export default function EventChatScreen() {
         title="Event Chat"
         subtitle={event?.title ?? "Participants only"}
       />
-      <Card style={styles.chatNotice}>
+      {event ? (
+        <View style={[styles.eventHeader, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.eventHeaderCopy}>
+            <Text numberOfLines={1} style={[styles.eventHeaderTitle, { color: colors.text }]}>
+              {event.title}
+            </Text>
+            <Text numberOfLines={1} style={[styles.eventHeaderMeta, { color: colors.textMuted }]}>
+              {formatEventDate(event.start_time)} · {event.location_name}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+      <GradientSurface variant="soft" style={[styles.chatNotice, { borderColor: colors.border }]}>
         <ShieldCheck size={20} color={colors.success} />
         <View style={styles.noticeCopy}>
-          <Text style={styles.noticeTitle}>Logistics-first chat</Text>
-          <Text style={styles.noticeText}>
+          <Text style={[styles.noticeTitle, { color: colors.text }]}>Logistics-first chat</Text>
+          <Text style={[styles.noticeText, { color: colors.textMuted }]}>
             Keep it practical: meeting point, ETA, group details. Report anything that feels unsafe.
           </Text>
         </View>
@@ -85,15 +112,18 @@ export default function EventChatScreen() {
           onPress={() => router.push(`/report?targetType=event&eventId=${id}`)}
           style={styles.reportButton}
         />
-      </Card>
+      </GradientSurface>
       {error ? (
         <EmptyState title="Could not load chat" message={error} />
       ) : (
         <FlatList
+          ref={listRef}
           style={styles.messagesList}
           data={messages}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.messages}
+          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
+          onLayout={() => listRef.current?.scrollToEnd({ animated: false })}
           ListEmptyComponent={
             <EmptyState
               title="No messages yet"
@@ -111,14 +141,25 @@ export default function EventChatScreen() {
                     url={item.sender?.avatar_url}
                   />
                 ) : null}
-                <Card style={[styles.message, mine && styles.messageMine]}>
-                  <Text style={[styles.sender, mine && styles.senderMine]}>
+                <Card
+                  style={[
+                    styles.message,
+                    mine && {
+                      backgroundColor: colors.primary500,
+                      borderColor: colors.primary500
+                    }
+                  ]}
+                >
+                  <Text style={[styles.sender, { color: mine ? colors.primarySoft : colors.textMuted }]}>
                     {mine
                       ? "You"
                       : item.sender?.full_name || item.sender?.username || "Participant"}
                   </Text>
-                  <Text style={[styles.messageText, mine && styles.messageTextMine]}>
+                  <Text style={[styles.messageText, { color: mine ? colors.surface : colors.text }]}>
                     {item.body}
+                  </Text>
+                  <Text style={[styles.timestamp, { color: mine ? colors.primarySoft : colors.textSubtle }]}>
+                    {format(new Date(item.created_at), "HH:mm")}
                   </Text>
                 </Card>
               </View>
@@ -126,10 +167,35 @@ export default function EventChatScreen() {
           }}
         />
       )}
-      <View style={styles.composer}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.quickReplies}
+      >
+        {quickReplies.map((reply) => (
+          <Pressable
+            key={reply}
+            accessibilityRole="button"
+            accessibilityLabel={`Insert ${reply}`}
+            onPress={() => {
+              haptic("select");
+              setBody((current) => (current.trim() ? `${current.trim()} ${reply}` : reply));
+            }}
+            style={({ pressed }) => [
+              styles.quickReply,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+              pressed && styles.quickReplyPressed
+            ]}
+          >
+            <Text style={[styles.quickReplyText, { color: colors.primary500 }]}>{reply}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+      <View style={[styles.composer, { borderTopColor: colors.border, backgroundColor: colors.background }]}>
         <View style={styles.composerInput}>
           <Input
             label="Message"
+            hideLabel
             value={body}
             onChangeText={setBody}
             placeholder="Meeting point, ETA, friendly logistics..."
@@ -153,17 +219,32 @@ const styles = StyleSheet.create({
   },
   messages: {
     gap: spacing.md,
-    paddingBottom: spacing.lg
+    paddingBottom: spacing.xl
   },
   messagesList: {
     flex: 1
+  },
+  eventHeader: {
+    borderWidth: 1,
+    borderRadius: radii.xl,
+    padding: spacing.md
+  },
+  eventHeaderCopy: {
+    gap: spacing.xs
+  },
+  eventHeaderTitle: {
+    ...textStyles.body,
+    fontFamily: fontFamilies.extraBold
+  },
+  eventHeaderMeta: {
+    ...textStyles.small
   },
   chatNotice: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
-    backgroundColor: colors.primary50,
-    padding: spacing.md
+    padding: spacing.md,
+    borderWidth: 1
   },
   noticeCopy: {
     flex: 1,
@@ -171,12 +252,10 @@ const styles = StyleSheet.create({
   },
   noticeTitle: {
     ...textStyles.small,
-    fontFamily: fontFamilies.extraBold,
-    color: colors.text,
+    fontFamily: fontFamilies.extraBold
   },
   noticeText: {
-    ...textStyles.tiny,
-    color: colors.textMuted,
+    ...textStyles.tiny
   },
   reportButton: {
     minHeight: 36,
@@ -193,42 +272,56 @@ const styles = StyleSheet.create({
   message: {
     maxWidth: "82%",
     gap: spacing.xs,
-    padding: spacing.md
+    padding: spacing.md,
+    borderRadius: 22
   },
-  messageMine: {
-    backgroundColor: colors.primary500,
-    borderColor: colors.primary500
-  },
+  messageMine: {},
   sender: {
-    ...textStyles.tiny,
-    color: colors.textMuted,
+    ...textStyles.tiny
   },
-  senderMine: {
-    color: colors.primarySoft
-  },
+  senderMine: {},
   messageText: {
-    ...textStyles.body,
-    color: colors.text,
+    ...textStyles.body
   },
-  messageTextMine: {
-    color: colors.surface
+  messageTextMine: {},
+  quickReplies: {
+    gap: spacing.sm,
+    paddingVertical: spacing.xs,
+    paddingRight: spacing.md
+  },
+  quickReply: {
+    borderWidth: 1,
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm
+  },
+  quickReplyPressed: {
+    opacity: 0.82,
+    transform: [{ scale: 0.98 }]
+  },
+  quickReplyText: {
+    ...textStyles.small,
+    fontFamily: fontFamilies.extraBold
   },
   composer: {
     borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.sm,
     flexDirection: "row",
     alignItems: "flex-end",
     gap: spacing.sm,
-    backgroundColor: colors.background
+    paddingHorizontal: spacing.xs
   },
   composerInput: {
     flex: 1
   },
   sendButton: {
-    minWidth: 54,
-    minHeight: 54,
+    minWidth: 76,
+    minHeight: 50,
     borderRadius: radii.pill
+  },
+  timestamp: {
+    ...textStyles.tiny,
+    alignSelf: "flex-end"
   }
 });

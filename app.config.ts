@@ -9,7 +9,7 @@ const config: OutGoExpoConfig = {
   slug: "outgo",
   owner: "laurynas.valiunas",
   scheme: "outgo",
-  version: "0.1.0",
+  version: "1.0",
   icon: "./assets/images/icon.png",
   orientation: "portrait",
   userInterfaceStyle: "light",
@@ -17,6 +17,7 @@ const config: OutGoExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.outgo.app",
+    buildNumber: "12",
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       NSLocationWhenInUseUsageDescription:
@@ -25,7 +26,7 @@ const config: OutGoExpoConfig = {
   },
   android: {
     package: "com.outgo.app",
-    versionCode: 1,
+    versionCode: 12,
     adaptiveIcon: {
       foregroundImage: "./assets/images/adaptive-icon.png",
       backgroundColor: "#F7F6F2"
@@ -38,11 +39,18 @@ const config: OutGoExpoConfig = {
     "expo-router",
     "expo-font",
     [
+      "expo-notifications",
+      {
+        color: "#3A4BBF",
+        defaultChannel: "outgo-default"
+      }
+    ],
+    [
       "expo-splash-screen",
       {
         backgroundColor: "#F7F6F2",
         image: "./assets/images/splash-icon.png",
-        imageWidth: 160
+        imageWidth: 126
       }
     ],
     [
@@ -62,6 +70,7 @@ const config: OutGoExpoConfig = {
         microphonePermission: false
       }
     ],
+    "@react-native-community/datetimepicker",
     [
       "@rnmapbox/maps",
       {

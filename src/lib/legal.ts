@@ -228,12 +228,13 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         title: "3. Data we collect",
         body: [
           "Account data: email address, authentication identifiers, login status and account metadata.",
-          "Profile data: full name, username, avatar, bio, city, age range, interests and profile timestamps.",
+          "Profile data: full name, username, avatar, bio, city, age range, interests, hobbies, life context, social goals and profile timestamps.",
           "Event data: event title, description, category, vibe, location name, coordinates, city, start and end time, price type, maximum participants, safety note, host ID, participant status, favorites and event timestamps.",
           "Chat and report data: event messages, report type, reason, details, reported event or user, reporter ID, moderation status and timestamps.",
           "Location data: approximate or precise device location only if you grant permission, plus event location coordinates submitted by users. Event locations for published events may be visible to other users.",
           "Media data: avatar images and metadata when you upload a profile photo.",
           "Purchase data: RevenueCat customer identifiers, subscription status, product identifiers, entitlement status, store transaction metadata and related purchase information. We do not receive full payment card numbers from Apple or Google.",
+          "Notification data: device push tokens, notification preferences, delivery status, and notification interaction data needed to send plan, chat, safety and account updates if you enable notifications.",
           "Technical data: device information, app version, diagnostics, crash logs, IP address, security logs, usage events and analytics events needed to operate and improve the app."
         ]
       },
@@ -250,7 +251,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         body: [
           "Contract: to create accounts, authenticate users, show events, enable joining/leaving events, provide event chat, manage favorites, process subscriptions and provide support.",
           "Legitimate interests: to maintain safety, prevent abuse, debug issues, improve product quality, measure feature usage, protect rights, investigate reports and secure the service.",
-          "Consent: to access device location, upload photos, send optional notifications when implemented, and process optional information you choose to provide where consent is required.",
+          "Consent: to access device location, upload photos, send optional notifications if enabled, and process optional information you choose to provide where consent is required.",
           "Legal obligation: to comply with tax, accounting, consumer protection, app store, law enforcement and regulatory obligations."
         ]
       },
@@ -272,7 +273,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
       {
         title: "8. Service providers and recipients",
         body: [
-          "We may share data with service providers that help operate OutGo, including Supabase for backend, authentication, storage and realtime features; RevenueCat for subscription management; Apple App Store and Google Play for purchases; Sentry for crash/error tracking; map and location providers for map display and location features; hosting, email, analytics, security and support providers.",
+          "We may share data with service providers that help operate OutGo, including Supabase for backend, authentication, storage, realtime and Edge Function features; Expo Push Service, Apple Push Notification service and Firebase Cloud Messaging for notifications; RevenueCat for subscription management; Apple App Store and Google Play for purchases; Sentry for crash/error tracking; map and location providers for map display and location features; hosting, email, analytics, security and support providers.",
           "We may also disclose data if required by law, to protect users, to investigate abuse, to enforce our Terms, in connection with a business transfer, or with your instruction or consent."
         ]
       },

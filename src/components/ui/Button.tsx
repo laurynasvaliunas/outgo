@@ -8,7 +8,8 @@ import {
   type ViewStyle
 } from "react-native";
 import type { ReactNode } from "react";
-import { colors, fontFamilies, radii, shadows, spacing, textStyles } from "@/lib/theme";
+import { fontFamilies, radii, spacing, textStyles } from "@/lib/theme";
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "amber" | "outline";
 
@@ -29,21 +30,39 @@ export function Button({
   disabled,
   ...props
 }: ButtonProps) {
+  const { colors, shadows } = useAppTheme();
   const isDisabled = disabled || loading;
   const filled = variant === "primary" || variant === "danger" || variant === "amber";
   const indicatorColor = filled ? colors.white : colors.primary500;
-  const textStyle =
+  const textStyle = {
+    color:
+      variant === "primary" || variant === "danger" || variant === "amber"
+        ? colors.white
+        : variant === "ghost"
+          ? colors.primary500
+          : colors.primary700
+  };
+  const variantStyle =
     variant === "primary"
-      ? styles.primaryText
+      ? { backgroundColor: colors.primary500, ...shadows.pin }
       : variant === "secondary"
-        ? styles.secondaryText
+        ? {
+            backgroundColor: colors.surface,
+            borderWidth: 1,
+            borderColor: colors.border,
+            ...shadows.soft
+          }
         : variant === "outline"
-          ? styles.outlineText
+          ? {
+              backgroundColor: "transparent",
+              borderWidth: 1.5,
+              borderColor: colors.borderStrong
+            }
           : variant === "danger"
-            ? styles.dangerText
+            ? { backgroundColor: colors.danger, ...shadows.soft }
             : variant === "amber"
-              ? styles.amberText
-              : styles.ghostText;
+              ? { backgroundColor: colors.amber500, ...shadows.soft }
+              : { backgroundColor: "transparent" };
 
   return (
     <Pressable
@@ -51,7 +70,7 @@ export function Button({
       disabled={isDisabled}
       style={({ pressed }) => [
         styles.base,
-        styles[variant],
+        variantStyle,
         isDisabled && styles.disabled,
         pressed && !isDisabled && styles.pressed,
         style
@@ -87,30 +106,16 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   primary: {
-    backgroundColor: colors.primary500,
-    ...shadows.pin
   },
   secondary: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    ...shadows.soft
   },
   outline: {
-    backgroundColor: "transparent",
-    borderWidth: 1.5,
-    borderColor: colors.borderStrong
   },
   ghost: {
-    backgroundColor: "transparent"
   },
   danger: {
-    backgroundColor: colors.danger,
-    ...shadows.soft
   },
   amber: {
-    backgroundColor: colors.amber500,
-    ...shadows.soft
   },
   disabled: {
     opacity: 0.55
@@ -123,22 +128,10 @@ const styles = StyleSheet.create({
     ...textStyles.small,
     fontFamily: fontFamilies.extraBold
   },
-  primaryText: {
-    color: colors.white
-  },
-  secondaryText: {
-    color: colors.primary700
-  },
-  outlineText: {
-    color: colors.primary700
-  },
-  ghostText: {
-    color: colors.primary500
-  },
-  dangerText: {
-    color: colors.white
-  },
-  amberText: {
-    color: colors.white
-  }
+  primaryText: {},
+  secondaryText: {},
+  outlineText: {},
+  ghostText: {},
+  dangerText: {},
+  amberText: {}
 });

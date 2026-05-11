@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { View } from "react-native";
 import { Stack } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
@@ -10,7 +11,11 @@ import {
   PlusJakartaSans_700Bold,
   PlusJakartaSans_800ExtraBold
 } from "@expo-google-fonts/plus-jakarta-sans";
+import { IntroAnimationOverlay } from "@/components/app/IntroAnimationOverlay";
+import { AuthLinkBridge } from "@/components/app/AuthLinkBridge";
+import { NotificationBridge } from "@/components/app/NotificationBridge";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { AppThemeProvider, useAppTheme } from "@/hooks/useAppTheme";
 import { Sentry } from "@/lib/sentry";
 import { syncRevenueCatUser } from "@/lib/revenuecat";
 
@@ -47,12 +52,27 @@ function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthProvider>
-        <RevenueCatBridge />
-        <StatusBar style="dark" />
-        <Stack screenOptions={{ headerShown: false }} />
-      </AuthProvider>
+      <AppThemeProvider>
+        <ThemedRoot />
+      </AppThemeProvider>
     </GestureHandlerRootView>
+  );
+}
+
+function ThemedRoot() {
+  const { isDark } = useAppTheme();
+
+  return (
+    <AuthProvider>
+      <View style={{ flex: 1 }}>
+        <RevenueCatBridge />
+        <AuthLinkBridge />
+        <StatusBar style={isDark ? "light" : "dark"} />
+        <Stack screenOptions={{ headerShown: false }} />
+        <NotificationBridge />
+        <IntroAnimationOverlay />
+      </View>
+    </AuthProvider>
   );
 }
 

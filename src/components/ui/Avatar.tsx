@@ -1,5 +1,6 @@
 import { Image, StyleSheet, Text, View } from "react-native";
-import { colors, fontFamilies } from "@/lib/theme";
+import { fontFamilies } from "@/lib/theme";
+import { useThemeColors } from "@/hooks/useAppTheme";
 
 type AvatarProps = {
   url?: string | null;
@@ -8,6 +9,7 @@ type AvatarProps = {
 };
 
 export function Avatar({ url, name, size = 44 }: AvatarProps) {
+  const colors = useThemeColors();
   const initials =
     name
       ?.split(" ")
@@ -30,10 +32,21 @@ export function Avatar({ url, name, size = 44 }: AvatarProps) {
       style={[
         styles.avatar,
         styles.fallback,
-        { width: size, height: size, borderRadius: size / 2 }
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: colors.primary500,
+          borderColor: colors.primary200
+        }
       ]}
     >
-      <Text style={[styles.initials, { fontSize: Math.max(12, size * 0.34) }]}>
+      <Text
+        style={[
+          styles.initials,
+          { fontSize: Math.max(12, size * 0.34), color: colors.white }
+        ]}
+      >
         {initials}
       </Text>
     </View>
@@ -47,12 +60,9 @@ const styles = StyleSheet.create({
   fallback: {
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.primary500,
-    borderWidth: 1,
-    borderColor: colors.primary200
+    borderWidth: 1
   },
   initials: {
-    color: colors.white,
     fontFamily: fontFamilies.extraBold,
     letterSpacing: 0
   }

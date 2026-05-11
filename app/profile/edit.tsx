@@ -1,21 +1,31 @@
 import { useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { Redirect, router } from "expo-router";
-import { ImagePlus, Save } from "lucide-react-native";
+import { Redirect, router, useLocalSearchParams } from "expo-router";
+import { ImagePlus, Save, Trash2 } from "lucide-react-native";
+import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
+import { ChipSelector } from "@/components/ui/ChipSelector";
 import { Input } from "@/components/ui/Input";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Screen } from "@/components/ui/Screen";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { useAuth } from "@/hooks/useAuth";
+import { useThemeColors } from "@/hooks/useAppTheme";
+import {
+  hobbyOptions,
+  lifeContextOptions,
+  socialGoalOptions
+} from "@/lib/profileOptions";
 import { uploadAvatar } from "@/services/supabase/storage";
 import { profileSchema } from "@/validation/profile";
-import { colors, spacing, textStyles } from "@/lib/theme";
+import { spacing, textStyles } from "@/lib/theme";
 import { track } from "@/lib/analytics";
 
 export default function EditProfileScreen() {
-  const { session, profile, completeProfile, loading } = useAuth();
+  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
+  const { session, profile, completeProfile, loading, signOut } = useAuth();
+  const colors = useThemeColors();
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -23,6 +33,9 @@ export default function EditProfileScreen() {
   const [city, setCity] = useState("");
   const [ageRange, setAgeRange] = useState("");
   const [interests, setInterests] = useState("");
+  const [hobbies, setHobbies] = useState<string[]>([]);
+  const [lifeContext, setLifeContext] = useState<string[]>([]);
+  const [socialGoals, setSocialGoals] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
@@ -38,6 +51,9 @@ export default function EditProfileScreen() {
     setCity(profile.city);
     setAgeRange(profile.age_range ?? "");
     setInterests(profile.interests.join(", "));
+    setHobbies(profile.hobbies ?? []);
+    setLifeContext(profile.life_context ?? []);
+    setSocialGoals(profile.social_goals ?? []);
   }, [profile]);
 
   if (loading) {
@@ -63,7 +79,10 @@ export default function EditProfileScreen() {
       interests: interests
         .split(",")
         .map((item) => item.trim())
-        .filter(Boolean)
+        .filter(Boolean),
+      hobbies,
+      life_context: lifeContext,
+      social_goals: socialGoals
     });
 
     if (!parsed.success) {
@@ -79,9 +98,18 @@ export default function EditProfileScreen() {
     setSaving(true);
     setErrors({});
     try {
+      const wasComplete = Boolean(profile?.full_name && profile.username && profile.city);
       await completeProfile(parsed.data);
       track("profile_complete");
-      router.replace("/map");
+      if (!wasComplete) {
+        router.replace("/map");
+      } else if (typeof returnTo === "string" && returnTo.startsWith("/")) {
+        router.replace(returnTo);
+      } else if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace("/profile");
+      }
     } catch (error) {
       Alert.alert(
         "Could not save profile",
@@ -135,6 +163,26 @@ export default function EditProfileScreen() {
         subtitle="A small profile helps hosts recognize who is joining."
       />
       <View style={styles.form}>
+        <View style={styles.photoBlock}>
+          <Avatar size={104} name={fullName || profile?.full_name} url={avatarUrl} />
+          <View style={styles.photoActions}>
+            <Button
+              title={avatarUrl ? "Change photo" : "Add photo"}
+              variant="secondary"
+              loading={uploading}
+              icon={<ImagePlus size={18} color={colors.primaryDark} />}
+              onPress={pickAvatar}
+            />
+            {avatarUrl ? (
+              <Button
+                title="Remove"
+                variant="ghost"
+                icon={<Trash2 size={18} color={colors.danger} />}
+                onPress={() => setAvatarUrl("")}
+              />
+            ) : null}
+          </View>
+        </View>
         <Input label="Full name" value={fullName} onChangeText={setFullName} error={errors.full_name} />
         <Input
           label="Username"
@@ -143,25 +191,30 @@ export default function EditProfileScreen() {
           autoCapitalize="none"
           error={errors.username}
         />
-        <View style={styles.avatarRow}>
-          <View style={styles.avatarInput}>
-            <Input label="Avatar URL" value={avatarUrl} onChangeText={setAvatarUrl} error={errors.avatar_url} placeholder="Optional" />
-          </View>
-          <Button
-            title="Upload"
-            variant="secondary"
-            loading={uploading}
-            icon={<ImagePlus size={18} color={colors.primaryDark} />}
-            onPress={pickAvatar}
-            style={styles.uploadButton}
-          />
-        </View>
         <Input label="Bio" value={bio} onChangeText={setBio} error={errors.bio} multiline placeholder="A sentence about how you like to spend offline time." />
         <Input label="City" value={city} onChangeText={setCity} error={errors.city} placeholder="Your city" />
         <Input label="Age range" value={ageRange} onChangeText={setAgeRange} error={errors.age_range} placeholder="Optional, e.g. 25-34" />
         <Input label="Interests" value={interests} onChangeText={setInterests} error={errors.interests} placeholder="coffee, walking, language exchange" />
+        <ChipSelector
+          label="Hobbies"
+          options={hobbyOptions}
+          values={hobbies}
+          onChange={setHobbies}
+        />
+        <ChipSelector
+          label="Life context"
+          options={lifeContextOptions}
+          values={lifeContext}
+          onChange={setLifeContext}
+        />
+        <ChipSelector
+          label="Social goals"
+          options={socialGoalOptions}
+          values={socialGoals}
+          onChange={setSocialGoals}
+        />
       </View>
-      <Text style={styles.note}>
+      <Text style={[styles.note, { color: colors.textMuted }]}>
         Avoid sharing sensitive personal details. You can always leave an event
         or report a concern.
       </Text>
@@ -171,6 +224,16 @@ export default function EditProfileScreen() {
         icon={<Save size={18} color="#FFFFFF" />}
         onPress={submit}
       />
+      {!profile?.full_name || !profile?.username || !profile?.city ? (
+        <Button
+          title="Sign out"
+          variant="ghost"
+          onPress={async () => {
+            await signOut();
+            router.replace("/login");
+          }}
+        />
+      ) : null}
     </Screen>
   );
 }
@@ -179,19 +242,15 @@ const styles = StyleSheet.create({
   form: {
     gap: spacing.md
   },
-  avatarRow: {
-    flexDirection: "row",
-    gap: spacing.sm,
-    alignItems: "flex-end"
+  photoBlock: {
+    alignItems: "center",
+    gap: spacing.md
   },
-  avatarInput: {
-    flex: 1
-  },
-  uploadButton: {
-    minWidth: 108
+  photoActions: {
+    alignSelf: "stretch",
+    gap: spacing.sm
   },
   note: {
     ...textStyles.small,
-    color: colors.textMuted,
   }
 });

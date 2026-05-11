@@ -9,13 +9,16 @@ import {
   View
 } from "react-native";
 import type { ReactNode } from "react";
-import { colors, fontFamilies, radii, spacing, textStyles } from "@/lib/theme";
+import { fontFamilies, radii, spacing, textStyles } from "@/lib/theme";
+import { useThemeColors } from "@/hooks/useAppTheme";
 
 type InputProps = TextInputProps & {
   label: string;
   error?: string;
   leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
   containerStyle?: StyleProp<ViewStyle>;
+  hideLabel?: boolean;
 };
 
 export function Input({
@@ -24,25 +27,36 @@ export function Input({
   style,
   multiline,
   leftIcon,
+  rightIcon,
   containerStyle,
+  hideLabel = false,
   onFocus,
   onBlur,
   ...props
 }: InputProps) {
+  const colors = useThemeColors();
   const [focused, setFocused] = useState(false);
 
   return (
     <View style={[styles.wrapper, containerStyle]}>
-      <Text style={styles.label}>{label}</Text>
+      {hideLabel ? null : (
+        <Text style={[styles.label, { color: colors.textMuted }]}>{label}</Text>
+      )}
       <View
         style={[
           styles.inputFrame,
-          focused && styles.inputFocused,
-          error && styles.inputError,
+          {
+            borderColor: error
+              ? colors.danger
+              : focused
+                ? colors.primary500
+                : colors.border,
+            backgroundColor: focused ? colors.backgroundElevated : colors.surface
+          },
           multiline && styles.multilineFrame
         ]}
-      >
-        {leftIcon ? <View style={styles.leftIcon}>{leftIcon}</View> : null}
+        >
+          {leftIcon ? <View style={styles.leftIcon}>{leftIcon}</View> : null}
         <TextInput
           placeholderTextColor={colors.textSubtle}
           multiline={multiline}
@@ -56,14 +70,16 @@ export function Input({
           }}
           style={[
             styles.input,
+            { color: colors.text },
             Boolean(leftIcon) && styles.inputWithIcon,
             multiline && styles.multiline,
             style
           ]}
           {...props}
         />
+        {rightIcon ? <View style={styles.rightIcon}>{rightIcon}</View> : null}
       </View>
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text style={[styles.error, { color: colors.danger }]}>{error}</Text> : null}
     </View>
   );
 }
@@ -74,15 +90,12 @@ const styles = StyleSheet.create({
   },
   label: {
     ...textStyles.small,
-    fontFamily: fontFamilies.bold,
-    color: colors.textMuted
+    fontFamily: fontFamilies.bold
   },
   inputFrame: {
     minHeight: 50,
     borderRadius: radii.lg,
     borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
     flexDirection: "row",
     alignItems: "center"
   },
@@ -90,15 +103,16 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 50,
     paddingHorizontal: spacing.ml,
-    color: colors.text,
     ...textStyles.body
   },
-  inputFocused: {
-    borderColor: colors.primary500,
-    backgroundColor: colors.white
-  },
+  inputFocused: {},
   leftIcon: {
     paddingLeft: spacing.ml,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  rightIcon: {
+    paddingRight: spacing.ml,
     alignItems: "center",
     justifyContent: "center"
   },
@@ -113,11 +127,8 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     textAlignVertical: "top"
   },
-  inputError: {
-    borderColor: colors.danger
-  },
+  inputError: {},
   error: {
-    color: colors.danger,
     ...textStyles.small
   }
 });

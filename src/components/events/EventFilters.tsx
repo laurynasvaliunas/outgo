@@ -3,7 +3,9 @@ import { EVENT_CATEGORIES, type EventCategory, type EventFilters as Filters, typ
 import { CategoryPill } from "./CategoryPill";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { colors, fontFamilies, spacing, textStyles } from "@/lib/theme";
+import { fontFamilies, spacing, textStyles } from "@/lib/theme";
+import { useThemeColors } from "@/hooks/useAppTheme";
+import { haptic } from "@/lib/haptics";
 
 type EventFiltersProps = {
   filters: Filters;
@@ -15,6 +17,7 @@ const dateOptions: { label: string; value: Filters["date"] }[] = [
   { label: "Any date", value: "all" },
   { label: "Today", value: "today" },
   { label: "Tomorrow", value: "tomorrow" },
+  { label: "Weekend", value: "weekend" },
   { label: "This week", value: "week" }
 ];
 
@@ -26,7 +29,10 @@ const priceOptions: { label: string; value: PriceType | "all" }[] = [
 ];
 
 export function EventFilters({ filters, onChange, compact }: EventFiltersProps) {
+  const colors = useThemeColors();
+
   const setCategory = (category: EventCategory | "all") => {
+    haptic("select");
     onChange({ ...filters, category });
   };
 
@@ -57,7 +63,7 @@ export function EventFilters({ filters, onChange, compact }: EventFiltersProps) 
       {!compact ? (
         <>
           <View style={styles.group}>
-            <Text style={styles.label}>Date</Text>
+            <Text style={[styles.label, { color: colors.text }]}>Date</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -68,14 +74,17 @@ export function EventFilters({ filters, onChange, compact }: EventFiltersProps) 
                   key={option.value}
                   title={option.label}
                   variant={(filters.date ?? "all") === option.value ? "primary" : "secondary"}
-                  onPress={() => onChange({ ...filters, date: option.value })}
+                  onPress={() => {
+                    haptic("select");
+                    onChange({ ...filters, date: option.value });
+                  }}
                   style={styles.chipButton}
                 />
               ))}
             </ScrollView>
           </View>
           <View style={styles.group}>
-            <Text style={styles.label}>Price</Text>
+            <Text style={[styles.label, { color: colors.text }]}>Price</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -86,7 +95,10 @@ export function EventFilters({ filters, onChange, compact }: EventFiltersProps) 
                   key={option.value}
                   title={option.label}
                   variant={(filters.priceType ?? "all") === option.value ? "primary" : "secondary"}
-                  onPress={() => onChange({ ...filters, priceType: option.value })}
+                  onPress={() => {
+                    haptic("select");
+                    onChange({ ...filters, priceType: option.value });
+                  }}
                   style={styles.chipButton}
                 />
               ))}
@@ -146,7 +158,6 @@ const styles = StyleSheet.create({
   label: {
     ...textStyles.small,
     fontFamily: fontFamilies.bold,
-    color: colors.text,
   },
   inline: {
     flexDirection: "row",
